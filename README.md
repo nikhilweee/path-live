@@ -1,16 +1,5 @@
-# myapp
+# path-live
 
-A new Flutter project.
+A mobile app for live status of [PATH](https://www.panynj.gov/path/en/index.html) trains. Built using [Flutter](https://flutter.dev/) on [Project IDX](https://idx.dev/). Grab the latest [release](https://github.com/nikhilweee/path-live/releases) to try it out!
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+![alt text](<https://i.imgur.com/Wkv0DFu.png>)
