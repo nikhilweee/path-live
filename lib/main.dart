@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
@@ -96,6 +99,13 @@ class Result {
   }
 }
 
+class LatLong {
+  final double latitude;
+  final double longitude;
+
+  LatLong(this.latitude, this.longitude);
+}
+
 void main() {
   runApp(MyApp());
 }
@@ -131,29 +141,31 @@ class MainWidget extends StatefulWidget {
 }
 
 class _MainWidgetState extends State<MainWidget> {
-  List<Result> results = [];
-  List<String> filters = [];
+  List<Result> _results = [];
+  List<String> _filters = [];
+  IconData _fabIcon = Icons.near_me_outlined;
   Timer? _timer;
 
-  List<String> stations = [
-    "NWK",
-    "HAR",
-    "JSQ",
-    "GRV",
-    "EXP",
-    "WTC",
-    "NEW",
-    "HOB",
-    "CHR",
-    "09S",
-    "14S",
-    "23S",
-    "33S"
-  ];
+  Map<String, LatLong> _stationCoordinates = {
+    "NWK": LatLong(40.7357214, -74.1613136),
+    "HAR": LatLong(40.7376621, -74.1562678),
+    "JSQ": LatLong(40.7319329, -74.0653761),
+    "GRV": LatLong(40.7190822, -74.0445114),
+    "EXP": LatLong(40.7169196, -74.0340219),
+    "WTC": LatLong(40.7142535, -74.0194767),
+    "NEW": LatLong(40.7246329, -74.0339884),
+    "HOB": LatLong(40.7331754, -74.0302369),
+    "CHR": LatLong(40.7341757, -74.0085746),
+    "09S": LatLong(40.7354038, -74.0005162),
+    "14S": LatLong(40.7365777, -73.9992338),
+    "23S": LatLong(40.7425656, -73.993305),
+    "33S": LatLong(40.7488743, -73.9886441),
+  };
 
   @override
   void initState() {
     super.initState();
+    _loadFilters();
     fetchJsonData();
     _startAutoRefresh();
   }
@@ -170,6 +182,76 @@ class _MainWidgetState extends State<MainWidget> {
     });
   }
 
+  // Functions to load filters from SharedPreferences
+  Future<void> _loadFilters() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _filters = prefs.getStringList('filters') ?? [];
+    });
+  }
+
+  // Function to save filters to SharedPreferences
+  Future<void> _saveFilters() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('filters', _filters);
+  }
+
+  // Function to request location permission and get location
+  Future<void> _requestLocationPermissionAndPrint() async {
+    var status = await Permission.location.status;
+
+    if (!status.isGranted) {
+      // Request permission if not already granted
+      status = await Permission.location.request();
+    }
+
+    if (status.isGranted) {
+      // Permission granted, get the location
+      _getUserLocation();
+    } else if (status.isPermanentlyDenied) {
+      // Handle the case where the user permanently denied the permission
+      openAppSettings();
+    }
+  }
+
+  String _findClosestStation(Position userPosition) {
+    String closestStation = "";
+    double closestDistance = double.infinity;
+
+    _stationCoordinates.forEach((station, latLong) {
+      double distance = Geolocator.distanceBetween(
+        userPosition.latitude,
+        userPosition.longitude,
+        latLong.latitude,
+        latLong.longitude,
+      );
+
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestStation = station;
+      }
+    });
+
+    return closestStation;
+  }
+
+  // Function to get the user's location
+  Future<void> _getUserLocation() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition();
+      print('Current location: ${position.latitude}, ${position.longitude}');
+      String closestStation = _findClosestStation(position);
+      print('Closest station: $closestStation');
+      setState(() {
+        _fabIcon = Icons.near_me;
+        _filters = [closestStation];
+      });
+    } catch (e) {
+      print('Error getting location: $e');
+    }
+  }
+
+  // Function to fetch JSON data from the PATH API
   Future<void> fetchJsonData() async {
     final response = await http.get(
         Uri.parse('https://www.panynj.gov/bin/portauthority/ridepath.json'));
@@ -182,21 +264,21 @@ class _MainWidgetState extends State<MainWidget> {
           .toList();
 
       setState(() {
-        this.results = results;
+        _results = results;
       });
     } else {
       setState(() {
-        results = [];
+        _results = [];
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    List<Result> filteredResults = filters.isEmpty
-        ? results
-        : results
-            .where((result) => filters.contains(result.consideredStation))
+    List<Result> filteredResults = _filters.isEmpty
+        ? _results
+        : _results
+            .where((result) => _filters.contains(result.consideredStation))
             .toList();
 
     return Scaffold(
@@ -213,19 +295,20 @@ class _MainWidgetState extends State<MainWidget> {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Row(
-                  children: stations.map((station) {
+                  children: _stationCoordinates.keys.map((station) {
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
                       child: FilterChip(
                         label: Text(station),
-                        selected: filters.contains(station),
+                        selected: _filters.contains(station),
                         onSelected: (bool selected) {
                           setState(() {
                             if (selected) {
-                              filters.add(station);
+                              _filters.add(station);
                             } else {
-                              filters.removeWhere((String s) => s == station);
+                              _filters.removeWhere((String s) => s == station);
                             }
+                            _saveFilters();
                           });
                         },
                       ),
@@ -251,6 +334,11 @@ class _MainWidgetState extends State<MainWidget> {
             ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _requestLocationPermissionAndPrint,
+        tooltip: 'Get Location',
+        child: Icon(_fabIcon),
       ),
     );
   }
@@ -368,7 +456,7 @@ class ColorCircleWidget extends StatelessWidget {
   }
 }
 
-class MessageWidget extends StatelessWidget {
+class MessageWidget extends StatefulWidget {
   const MessageWidget({
     super.key,
     required this.message,
@@ -376,6 +464,11 @@ class MessageWidget extends StatelessWidget {
 
   final Message message;
 
+  @override
+  State<MessageWidget> createState() => _MessageWidgetState();
+}
+
+class _MessageWidgetState extends State<MessageWidget> {
   String formatSeconds(String secondsToArrival, String lastUpdated) {
     DateTime lastUpdatedTime = DateTime.parse(lastUpdated);
     Duration timePassed = DateTime.now().difference(lastUpdatedTime);
@@ -394,28 +487,55 @@ class MessageWidget extends StatelessWidget {
     return '$sign$formattedMinutes:$formattedSeconds';
   }
 
+  bool _showArrivalTimeMessage = false;
+
+  void _toggleArrivalTimeMessage() {
+    setState(() {
+      _showArrivalTimeMessage = !_showArrivalTimeMessage;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Row(
-          children: [
-            ColorCircleWidget(colors: message.lineColor),
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return GestureDetector(
+      onTap: _toggleArrivalTimeMessage,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              Row(
                 children: [
-                  Text(message.headSign),
-                  Text(
-                    formatSeconds(
-                        message.secondsToArrival, message.lastUpdated),
-                    style: Theme.of(context).textTheme.labelLarge,
+                  ColorCircleWidget(colors: widget.message.lineColor),
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(widget.message.headSign),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            if (_showArrivalTimeMessage) ...[
+                              Text(
+                                formatSeconds(widget.message.secondsToArrival,
+                                    widget.message.lastUpdated),
+                                style: Theme.of(context).textTheme.labelLarge,
+                              ),
+                            ] else ...[
+                              Text(
+                                widget.message.arrivalTimeMessage,
+                                style: Theme.of(context).textTheme.labelLarge,
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
