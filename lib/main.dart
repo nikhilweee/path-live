@@ -177,7 +177,7 @@ class _MainWidgetState extends State<MainWidget> {
   }
 
   void _startAutoRefresh() {
-    _timer = Timer.periodic(Duration(minutes: 1), (timer) {
+    _timer = Timer.periodic(Duration(seconds: 15), (timer) {
       fetchJsonData();
     });
   }
