@@ -144,7 +144,8 @@ class _MainWidgetState extends State<MainWidget> {
   List<Result> _results = [];
   List<String> _filters = [];
   IconData _fabIcon = Icons.near_me_outlined;
-  Timer? _timer;
+  Timer? _refreshTimer;
+  double _refreshProgress = 0.0;
 
   Map<String, LatLong> _stationCoordinates = {
     "NWK": LatLong(40.7357214, -74.1613136),
@@ -167,18 +168,36 @@ class _MainWidgetState extends State<MainWidget> {
     super.initState();
     _loadFilters();
     fetchJsonData();
-    _startAutoRefresh();
+    _startRefreshTimer();
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _refreshTimer?.cancel();
     super.dispose();
   }
 
-  void _startAutoRefresh() {
-    _timer = Timer.periodic(Duration(seconds: 15), (timer) {
-      fetchJsonData();
+  void _startRefreshTimer() {
+    // Reset progress
+    setState(() {
+      _refreshProgress = 0.0;
+    });
+
+    // Use a timer for both progress updates and data fetching
+    _refreshTimer = Timer.periodic(Duration(milliseconds: 100), (timer) {
+      // Update progress
+      setState(() {
+        _refreshProgress += 100 / (15 * 1000);
+      });
+
+      // Check if we've reached the refresh interval
+      if (_refreshProgress >= 1.0) {
+        fetchJsonData();
+        // Reset progress
+        setState(() {
+          _refreshProgress = 0.0;
+        });
+      }
     });
   }
 
@@ -290,6 +309,11 @@ class _MainWidgetState extends State<MainWidget> {
         onRefresh: fetchJsonData,
         child: Column(
           children: [
+            LinearProgressIndicator(
+              value: _refreshProgress,
+              color: Theme.of(context).colorScheme.primary,
+              backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+            ),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Padding(
