@@ -487,7 +487,7 @@ class _MessageWidgetState extends State<MessageWidget> {
     return '$sign$formattedMinutes:$formattedSeconds';
   }
 
-  bool _showArrivalTimeMessage = false;
+  bool _showArrivalTimeMessage = true;
 
   void _toggleArrivalTimeMessage() {
     setState(() {
