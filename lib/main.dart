@@ -56,6 +56,8 @@ class _MainWidgetState extends State<MainWidget> {
   List<Result> _results = [];
   List<String> _filters = [];
   IconData _fabIcon = Icons.near_me_outlined;
+  Timer? _refreshTimer;
+  double _refreshProgress = 0.0;
 
   final Map<String, LatLong> _stationCoordinates = {
     "NWK": LatLong(40.7357214, -74.1613136),
@@ -78,8 +80,40 @@ class _MainWidgetState extends State<MainWidget> {
     super.initState();
     _loadFilters();
     fetchJsonData();
+    _startRefreshTimer();
   }
 
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startRefreshTimer() {
+    // Reset progress
+    setState(() {
+      _refreshProgress = 0.0;
+    });
+
+    // Use a timer for both progress updates and data fetching
+    _refreshTimer = Timer.periodic(Duration(milliseconds: 100), (timer) {
+      // Update progress
+      setState(() {
+        _refreshProgress += 100 / (15 * 1000);
+      });
+
+      // Check if we've reached the refresh interval
+      if (_refreshProgress >= 1.0) {
+        fetchJsonData();
+        // Reset progress
+        setState(() {
+          _refreshProgress = 0.0;
+        });
+      }
+    });
+  }
+
+  // Functions to load filters from SharedPreferences
   Future<void> _loadFilters() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -197,19 +231,37 @@ class _MainWidgetState extends State<MainWidget> {
         onRefresh: fetchJsonData,
         child: Column(
           children: [
-            ProgressBar(
-              duration: const Duration(seconds: 15),
+            LinearProgressIndicator(
+              value: _refreshProgress,
               color: Theme.of(context).colorScheme.primary,
-              backgroundColor:
-                  Theme.of(context).colorScheme.surfaceContainerHighest,
-              onCompleted: () {
-                fetchJsonData();
-              },
+              backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
             ),
-            StationFilter(
-              stations: _stationCoordinates,
-              selectedFilters: _filters,
-              onFilterSelected: _handleFilterSelection,
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: _stationCoordinates.keys.map((station) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: FilterChip(
+                        label: Text(station),
+                        selected: _filters.contains(station),
+                        onSelected: (bool selected) {
+                          setState(() {
+                            if (selected) {
+                              _filters.add(station);
+                            } else {
+                              _filters.removeWhere((String s) => s == station);
+                            }
+                            _saveFilters();
+                          });
+                        },
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
             ),
             Expanded(
               child: filteredResults.isEmpty
