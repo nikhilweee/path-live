@@ -17,55 +17,61 @@ class MessageCard extends StatefulWidget {
 
 class _MessageCardState extends State<MessageCard>
     with SingleTickerProviderStateMixin {
-  late AnimationController _flashController;
-  late Animation<double> _flashAnimation;
+  late AnimationController _colorAnimationController;
+  late Animation<Color?> _colorAnimation;
 
   @override
   void initState() {
     super.initState();
 
-    _flashController = AnimationController(
+    // Only initialize the controller here, not theme-dependent properties
+    _colorAnimationController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
       value: 1.0,
     );
 
-    _flashAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
-      CurvedAnimation(
-        parent: _flashController,
-        curve: Curves.easeOutQuart,
-      ),
-    );
+    // We'll set the actual animation in didChangeDependencies
   }
 
   @override
   void didUpdateWidget(MessageCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.message.lastUpdated != widget.message.lastUpdated) {
-      _flashController.reset(); // Go to beginning (Tween 1.0)
-      _flashController.forward(); // Animate to end (Tween 0.0)
+      _colorAnimationController.reset(); // Go to beginning (Tween 1.0)
+      _colorAnimationController.forward(); // Animate to end (Tween 0.0)
     }
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Move the theme-dependent code here
+    _colorAnimation = ColorTween(
+      begin: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+      end: Theme.of(context).cardColor,
+    ).animate(
+      CurvedAnimation(
+        parent: _colorAnimationController,
+        curve: Curves.easeOutQuart,
+      ),
+    );
+  }
+
+  @override
   void dispose() {
-    _flashController.dispose();
+    _colorAnimationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final highlightColor = Theme.of(context).colorScheme.primary;
-
     return AnimatedBuilder(
-      animation: _flashAnimation,
+      animation: _colorAnimation,
       builder: (context, child) {
         return Card(
-          color: Color.lerp(
-            Theme.of(context).cardColor,
-            highlightColor.withValues(alpha: 0.1),
-            _flashAnimation.value,
-          ),
+          color: _colorAnimation.value,
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: child,

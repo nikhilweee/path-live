@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -6,17 +7,11 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
 
-// Models - consolidated into a single file
 import 'models/models.dart';
-
-// Widgets
-import 'widgets/station_filter.dart';
 import 'widgets/result_widget.dart';
 import 'widgets/progress_bar.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -53,12 +48,7 @@ class MainWidget extends StatefulWidget {
 }
 
 class _MainWidgetState extends State<MainWidget> {
-  List<Result> _results = [];
-  List<String> _filters = [];
-  IconData _fabIcon = Icons.near_me_outlined;
-  Timer? _refreshTimer;
-  double _refreshProgress = 0.0;
-
+  final ScrollController _scrollController = ScrollController();
   final Map<String, LatLong> _stationCoordinates = {
     "NWK": LatLong(40.7357214, -74.1613136),
     "HAR": LatLong(40.7376621, -74.1562678),
@@ -75,66 +65,29 @@ class _MainWidgetState extends State<MainWidget> {
     "33S": LatLong(40.7488743, -73.9886441),
   };
 
+  List<Result> _results = [];
+  List<String> _filters = [];
+  IconData _fabIcon = Icons.near_me_outlined;
+  bool _isFabVisible = true;
+
   @override
   void initState() {
     super.initState();
     _loadFilters();
     fetchJsonData();
-    _startRefreshTimer();
+    _scrollController.addListener(_onScroll);
   }
 
-  @override
-  void dispose() {
-    _refreshTimer?.cancel();
-    super.dispose();
-  }
+  void _onScroll() {
+    final isScrollingDown = _scrollController.position.userScrollDirection ==
+        ScrollDirection.reverse;
+    final isScrollingUp = _scrollController.position.userScrollDirection ==
+        ScrollDirection.forward;
 
-  void _startRefreshTimer() {
-    // Reset progress
-    setState(() {
-      _refreshProgress = 0.0;
-    });
-
-    // Use a timer for both progress updates and data fetching
-    _refreshTimer = Timer.periodic(Duration(milliseconds: 100), (timer) {
-      // Update progress
-      setState(() {
-        _refreshProgress += 100 / (15 * 1000);
-      });
-
-      // Check if we've reached the refresh interval
-      if (_refreshProgress >= 1.0) {
-        fetchJsonData();
-        // Reset progress
-        setState(() {
-          _refreshProgress = 0.0;
-        });
-      }
-    });
-  }
-
-  // Functions to load filters from SharedPreferences
-  Future<void> _loadFilters() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _filters = prefs.getStringList('filters') ?? [];
-    });
-  }
-
-  Future<void> _saveFilters() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('filters', _filters);
-  }
-
-  void _handleFilterSelection(String station, bool selected) {
-    setState(() {
-      if (selected) {
-        _filters.add(station);
-      } else {
-        _filters.removeWhere((s) => s == station);
-      }
-      _saveFilters();
-    });
+    if ((isScrollingDown && _isFabVisible) ||
+        (isScrollingUp && !_isFabVisible)) {
+      setState(() => _isFabVisible = isScrollingUp);
+    }
   }
 
   Future<void> _requestLocationPermissionAndPrint() async {
@@ -174,15 +127,15 @@ class _MainWidgetState extends State<MainWidget> {
 
   Future<void> _getUserLocation() async {
     try {
-      Position position = await Geolocator.getCurrentPosition();
-      String closestStation = _findClosestStation(position);
+      final position = await Geolocator.getCurrentPosition();
+      final closestStation = _findClosestStation(position);
       setState(() {
         _fabIcon = Icons.near_me;
         _filters = [closestStation];
       });
       _saveFilters();
     } catch (e) {
-      print('Error getting location: $e');
+      debugPrint('Error getting location: $e');
     }
   }
 
@@ -191,32 +144,42 @@ class _MainWidgetState extends State<MainWidget> {
       final response = await http.get(
           Uri.parse('https://www.panynj.gov/bin/portauthority/ridepath.json'));
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = json.decode(response.body);
-
-        List<Result> results = (data['results'] as List)
-            .map((resultJson) => Result.fromJson(resultJson))
-            .toList();
-
-        setState(() {
-          _results = results;
-        });
-      } else {
-        setState(() {
-          _results = [];
-        });
-      }
-    } catch (e) {
-      print('Error fetching data: $e');
       setState(() {
-        _results = [];
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          _results = (data['results'] as List)
+              .map((resultJson) => Result.fromJson(resultJson))
+              .toList();
+        } else {
+          _results = [];
+        }
       });
+    } catch (e) {
+      debugPrint('Error fetching data: $e');
+      setState(() => _results = []);
     }
+  }
+
+  Future<void> _loadFilters() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() => _filters = prefs.getStringList('filters') ?? []);
+  }
+
+  Future<void> _saveFilters() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('filters', _filters);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    List<Result> filteredResults = _filters.isEmpty
+    final filteredResults = _filters.isEmpty
         ? _results
         : _results
             .where((result) => _filters.contains(result.consideredStation))
@@ -231,62 +194,71 @@ class _MainWidgetState extends State<MainWidget> {
         onRefresh: fetchJsonData,
         child: Column(
           children: [
-            LinearProgressIndicator(
-              value: _refreshProgress,
+            ProgressBar(
+              duration: const Duration(seconds: 15),
               color: Theme.of(context).colorScheme.primary,
-              backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+              backgroundColor:
+                  Theme.of(context).colorScheme.surfaceContainerHighest,
+              onCompleted: fetchJsonData,
             ),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Row(
-                  children: _stationCoordinates.keys.map((station) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: FilterChip(
-                        label: Text(station),
-                        selected: _filters.contains(station),
-                        onSelected: (bool selected) {
-                          setState(() {
-                            if (selected) {
-                              _filters.add(station);
-                            } else {
-                              _filters.removeWhere((String s) => s == station);
-                            }
-                            _saveFilters();
-                          });
-                        },
-                      ),
-                    );
-                  }).toList(),
+                  children: _stationCoordinates.keys
+                      .map((station) => Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 4.0),
+                            child: FilterChip(
+                              label: Text(station),
+                              selected: _filters.contains(station),
+                              onSelected: (selected) {
+                                setState(() {
+                                  selected
+                                      ? _filters.add(station)
+                                      : _filters
+                                          .removeWhere((s) => s == station);
+                                  _saveFilters();
+                                });
+                              },
+                            ),
+                          ))
+                      .toList(),
                 ),
               ),
             ),
             Expanded(
               child: filteredResults.isEmpty
                   ? const Center(child: Text("Failed to load data"))
-                  : Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: ListView.builder(
-                        itemCount: filteredResults.length,
-                        itemBuilder: (context, index) {
-                          var result = filteredResults[index];
-                          return ResultWidget(
-                            key: ValueKey('result_${result.consideredStation}'),
-                            result: result,
-                          );
-                        },
-                      ),
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      controller: _scrollController,
+                      itemCount: filteredResults.length,
+                      itemBuilder: (_, index) {
+                        final result = filteredResults[index];
+                        return ResultWidget(
+                          key: ValueKey('result_${result.consideredStation}'),
+                          result: result,
+                        );
+                      },
                     ),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _requestLocationPermissionAndPrint,
-        tooltip: 'Get Location',
-        child: Icon(_fabIcon),
+      floatingActionButton: AnimatedSlide(
+        duration: const Duration(milliseconds: 300),
+        offset: _isFabVisible ? Offset.zero : const Offset(0, 2),
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 300),
+          opacity: _isFabVisible ? 1.0 : 0.0,
+          child: FloatingActionButton(
+            onPressed: _requestLocationPermissionAndPrint,
+            tooltip: 'Get Location',
+            child: Icon(_fabIcon),
+          ),
+        ),
       ),
     );
   }

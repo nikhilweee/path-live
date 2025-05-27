@@ -18,7 +18,18 @@ class RealTimeDisplay extends StatefulWidget {
 }
 
 class _RealTimeDisplayState extends State<RealTimeDisplay> {
-  bool _showCountdown = true;
+  late bool _showCountdown;
+
+  @override
+  void initState() {
+    super.initState();
+    // Show countdown only when seconds are between 0 and 600
+    int seconds = TimeUtils.remainingSeconds(
+      widget.secondsToArrival,
+      widget.lastUpdated,
+    );
+    _showCountdown = seconds > 0 && seconds < 600;
+  }
 
   void _toggleDisplay() {
     setState(() {
@@ -39,7 +50,10 @@ class _RealTimeDisplayState extends State<RealTimeDisplay> {
               style: Theme.of(context).textTheme.labelLarge,
             )
           : Text(
-              widget.arrivalTimeMessage,
+              TimeUtils.formatMinutesToArrival(
+                widget.secondsToArrival,
+                widget.lastUpdated,
+              ),
               style: Theme.of(context).textTheme.labelLarge,
             ),
     );

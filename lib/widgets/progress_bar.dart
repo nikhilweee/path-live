@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
 
 class ProgressBar extends StatefulWidget {
   final Duration duration;
   final Color color;
   final Color backgroundColor;
-  final VoidCallback onCompleted;
+  final Future<void> Function() onCompleted;
 
   const ProgressBar({
     super.key,
@@ -19,49 +18,54 @@ class ProgressBar extends StatefulWidget {
   State<ProgressBar> createState() => _ProgressBarState();
 }
 
-class _ProgressBarState extends State<ProgressBar> {
-  Timer? _timer;
-  double _progress = 0.0;
-  static const updateInterval = Duration(milliseconds: 50);
+class _ProgressBarState extends State<ProgressBar>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  bool _isRefreshing = false;
 
   @override
   void initState() {
     super.initState();
-    _startTimer();
+    _animationController = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    )..addStatusListener(_handleAnimationStatus);
+
+    _animationController.forward();
   }
 
-  void _startTimer() {
-    setState(() {
-      _progress = 0.0;
-    });
+  void _handleAnimationStatus(AnimationStatus status) async {
+    if (status == AnimationStatus.completed && !_isRefreshing) {
+      _isRefreshing = true;
 
-    final progressIncrement =
-        updateInterval.inMilliseconds / widget.duration.inMilliseconds;
-
-    _timer = Timer.periodic(updateInterval, (timer) {
-      setState(() {
-        _progress += progressIncrement;
-
-        if (_progress >= 1.0) {
-          _progress = 0.0;
-          widget.onCompleted();
+      try {
+        await widget.onCompleted();
+      } catch (e) {
+        print('Error in progress bar completion: $e');
+      } finally {
+        if (mounted) {
+          _isRefreshing = false;
+          _animationController.forward(from: 0.0);
         }
-      });
-    });
+      }
+    }
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _animationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return LinearProgressIndicator(
-      value: _progress,
-      color: widget.color,
-      backgroundColor: widget.backgroundColor,
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, _) => LinearProgressIndicator(
+        value: _animationController.value,
+        color: widget.color,
+        backgroundColor: widget.backgroundColor,
+      ),
     );
   }
 }

@@ -57,7 +57,7 @@ class Result {
   final String consideredStation;
   final List<Destination> destinations;
   final String consideredStationFullName;
-  
+
   static const Map<String, String> stationNames = {
     "NWK": "Newark",
     "HAR": "Harrison",
