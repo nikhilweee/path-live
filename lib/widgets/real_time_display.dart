@@ -23,12 +23,13 @@ class _RealTimeDisplayState extends State<RealTimeDisplay> {
   @override
   void initState() {
     super.initState();
-    // Show countdown only when seconds are between 0 and 600
+    // Show countdown only when time left is less than 10 mins.
     int seconds = TimeUtils.remainingSeconds(
       widget.secondsToArrival,
       widget.lastUpdated,
     );
-    _showCountdown = seconds > 0 && seconds < 600;
+    _showCountdown = seconds < 600;
+    print("$_showCountdown $seconds");
   }
 
   void _toggleDisplay() {
@@ -50,10 +51,7 @@ class _RealTimeDisplayState extends State<RealTimeDisplay> {
               style: Theme.of(context).textTheme.labelLarge,
             )
           : Text(
-              TimeUtils.formatMinutesToArrival(
-                widget.secondsToArrival,
-                widget.lastUpdated,
-              ),
+              widget.arrivalTimeMessage,
               style: Theme.of(context).textTheme.labelLarge,
             ),
     );
