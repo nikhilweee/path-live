@@ -43,12 +43,22 @@ class _RealTimeDisplayState extends State<RealTimeDisplay> {
     return GestureDetector(
       onTap: _toggleDisplay,
       child: _showCountdown
-          ? Text(
-              TimeUtils.formatSecondsToArrival(
-                widget.secondsToArrival,
-                widget.lastUpdated,
-              ),
-              style: Theme.of(context).textTheme.labelLarge,
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  TimeUtils.formatSecondsToArrival(
+                    widget.secondsToArrival,
+                    widget.lastUpdated,
+                  ),
+                  style: Theme.of(context).textTheme.labelSmall,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  widget.arrivalTimeMessage,
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
+              ],
             )
           : Text(
               widget.arrivalTimeMessage,
