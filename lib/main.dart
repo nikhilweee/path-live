@@ -49,6 +49,7 @@ class MainWidget extends StatefulWidget {
 
 class _MainWidgetState extends State<MainWidget> {
   final ScrollController _scrollController = ScrollController();
+
   final Map<String, LatLong> _stationCoordinates = {
     "NWK": LatLong(40.7357214, -74.1613136),
     "HAR": LatLong(40.7376621, -74.1562678),
@@ -79,23 +80,16 @@ class _MainWidgetState extends State<MainWidget> {
   }
 
   void _onScroll() {
-    final isScrollingDown = _scrollController.position.userScrollDirection ==
-        ScrollDirection.reverse;
-    final isScrollingUp = _scrollController.position.userScrollDirection ==
-        ScrollDirection.forward;
+    final direction = _scrollController.position.userScrollDirection;
+    final shouldShow = direction == ScrollDirection.forward;
 
-    if ((isScrollingDown && _isFabVisible) ||
-        (isScrollingUp && !_isFabVisible)) {
-      setState(() => _isFabVisible = isScrollingUp);
+    if (_isFabVisible != shouldShow) {
+      setState(() => _isFabVisible = shouldShow);
     }
   }
 
-  Future<void> _requestLocationPermissionAndPrint() async {
-    var status = await Permission.location.status;
-
-    if (!status.isGranted) {
-      status = await Permission.location.request();
-    }
+  Future<void> _requestLocationPermission() async {
+    final status = await Permission.location.request();
 
     if (status.isGranted) {
       _getUserLocation();
@@ -104,25 +98,18 @@ class _MainWidgetState extends State<MainWidget> {
     }
   }
 
-  String _findClosestStation(Position userPosition) {
-    String closestStation = "";
-    double closestDistance = double.infinity;
-
-    _stationCoordinates.forEach((station, latLong) {
-      double distance = Geolocator.distanceBetween(
-        userPosition.latitude,
-        userPosition.longitude,
-        latLong.latitude,
-        latLong.longitude,
-      );
-
-      if (distance < closestDistance) {
-        closestDistance = distance;
-        closestStation = station;
-      }
-    });
-
-    return closestStation;
+  String _findClosestStation(Position position) {
+    return _stationCoordinates.entries
+        .map((entry) => MapEntry(
+            entry.key,
+            Geolocator.distanceBetween(
+              position.latitude,
+              position.longitude,
+              entry.value.latitude,
+              entry.value.longitude,
+            )))
+        .reduce((a, b) => a.value < b.value ? a : b)
+        .key;
   }
 
   Future<void> _getUserLocation() async {
@@ -144,16 +131,13 @@ class _MainWidgetState extends State<MainWidget> {
       final response = await http.get(
           Uri.parse('https://www.panynj.gov/bin/portauthority/ridepath.json'));
 
-      setState(() {
-        if (response.statusCode == 200) {
-          final data = json.decode(response.body);
-          _results = (data['results'] as List)
-              .map((resultJson) => Result.fromJson(resultJson))
-              .toList();
-        } else {
-          _results = [];
-        }
-      });
+      final results = response.statusCode == 200
+          ? (json.decode(response.body)['results'] as List)
+              .map((json) => Result.fromJson(json))
+              .toList()
+          : <Result>[];
+
+      setState(() => _results = results);
     } catch (e) {
       debugPrint('Error fetching data: $e');
       setState(() => _results = []);
@@ -170,6 +154,34 @@ class _MainWidgetState extends State<MainWidget> {
     await prefs.setStringList('filters', _filters);
   }
 
+  void _toggleFilter(String station) {
+    setState(() {
+      _filters.contains(station)
+          ? _filters.remove(station)
+          : _filters.add(station);
+      _saveFilters();
+    });
+  }
+
+  Widget _buildFilterChips() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Padding(
+        padding: const EdgeInsets.all(4.0),
+        child: Wrap(
+          spacing: 8.0,
+          children: _stationCoordinates.keys
+              .map((station) => FilterChip(
+                    label: Text(station),
+                    selected: _filters.contains(station),
+                    onSelected: (_) => _toggleFilter(station),
+                  ))
+              .toList(),
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _scrollController.removeListener(_onScroll);
@@ -182,7 +194,7 @@ class _MainWidgetState extends State<MainWidget> {
     final filteredResults = _filters.isEmpty
         ? _results
         : _results
-            .where((result) => _filters.contains(result.consideredStation))
+            .where((r) => _filters.contains(r.consideredStation))
             .toList();
 
     return Scaffold(
@@ -196,37 +208,16 @@ class _MainWidgetState extends State<MainWidget> {
           children: [
             ProgressBar(
               duration: const Duration(seconds: 15),
-              color: Theme.of(context).colorScheme.primary,
-              backgroundColor:
-                  Theme.of(context).colorScheme.surfaceContainerHighest,
+              color: Theme.of(context).colorScheme.onPrimary,
+              backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
               onCompleted: fetchJsonData,
             ),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: _stationCoordinates.keys
-                      .map((station) => Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 4.0),
-                            child: FilterChip(
-                              label: Text(station),
-                              selected: _filters.contains(station),
-                              onSelected: (selected) {
-                                setState(() {
-                                  selected
-                                      ? _filters.add(station)
-                                      : _filters
-                                          .removeWhere((s) => s == station);
-                                  _saveFilters();
-                                });
-                              },
-                            ),
-                          ))
-                      .toList(),
-                ),
-              ),
+            AnimatedContainer(
+              color: Theme.of(context).colorScheme.surface,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              height: _isFabVisible ? 60 : 0.0,
+              child: _buildFilterChips(),
             ),
             Expanded(
               child: filteredResults.isEmpty
@@ -235,13 +226,11 @@ class _MainWidgetState extends State<MainWidget> {
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       controller: _scrollController,
                       itemCount: filteredResults.length,
-                      itemBuilder: (_, index) {
-                        final result = filteredResults[index];
-                        return ResultWidget(
-                          key: ValueKey('result_${result.consideredStation}'),
-                          result: result,
-                        );
-                      },
+                      itemBuilder: (_, index) => ResultWidget(
+                        key: ValueKey(
+                            'result_${filteredResults[index].consideredStation}'),
+                        result: filteredResults[index],
+                      ),
                     ),
             ),
           ],
@@ -250,14 +239,10 @@ class _MainWidgetState extends State<MainWidget> {
       floatingActionButton: AnimatedSlide(
         duration: const Duration(milliseconds: 300),
         offset: _isFabVisible ? Offset.zero : const Offset(0, 2),
-        child: AnimatedOpacity(
-          duration: const Duration(milliseconds: 300),
-          opacity: _isFabVisible ? 1.0 : 0.0,
-          child: FloatingActionButton(
-            onPressed: _requestLocationPermissionAndPrint,
-            tooltip: 'Get Location',
-            child: Icon(_fabIcon),
-          ),
+        child: FloatingActionButton(
+          onPressed: _requestLocationPermission,
+          tooltip: 'Get Location',
+          child: Icon(_fabIcon),
         ),
       ),
     );

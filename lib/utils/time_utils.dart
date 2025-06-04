@@ -19,4 +19,17 @@ class TimeUtils {
 
     return '$sign$formattedMinutes:$formattedSeconds';
   }
+
+  /// Formats time as "xx min" or "now" if arrival is imminent
+  static String formatMinutesToArrival(
+      String secondsToArrival, String lastUpdated) {
+    final totalSeconds = remainingSeconds(secondsToArrival, lastUpdated);
+
+    if (totalSeconds <= 60) {
+      return "now";
+    }
+
+    final minutes = (totalSeconds / 60).floor();
+    return "$minutes min";
+  }
 }

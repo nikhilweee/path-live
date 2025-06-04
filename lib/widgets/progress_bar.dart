@@ -41,7 +41,7 @@ class _ProgressBarState extends State<ProgressBar>
       try {
         await widget.onCompleted();
       } catch (e) {
-        print('Error in progress bar completion: $e');
+        debugPrint('Error in progress bar completion: $e');
       } finally {
         if (mounted) {
           _isRefreshing = false;

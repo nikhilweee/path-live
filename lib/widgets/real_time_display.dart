@@ -29,7 +29,6 @@ class _RealTimeDisplayState extends State<RealTimeDisplay> {
       widget.lastUpdated,
     );
     _showCountdown = seconds < 600;
-    print("$_showCountdown $seconds");
   }
 
   void _toggleDisplay() {
