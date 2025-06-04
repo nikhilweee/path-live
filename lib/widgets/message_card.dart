@@ -42,26 +42,26 @@ class _MessageCardState extends State<MessageCard> {
         color: _isHighlighted
             ? Theme.of(context).colorScheme.primaryContainer
             : null,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            children: [
-              ColorCircleWidget(colors: widget.message.lineColor),
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(widget.message.headSign),
-                    RealTimeDisplay(
-                      secondsToArrival: widget.message.secondsToArrival,
-                      lastUpdated: widget.message.lastUpdated,
-                      arrivalTimeMessage: widget.message.arrivalTimeMessage,
-                    ),
-                  ],
-                ),
+        child: Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ColorCircleWidget(colors: widget.message.lineColor),
+            ),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(widget.message.headSign),
+                ],
               ),
-            ],
-          ),
+            ),
+            RealTimeDisplay(
+              secondsToArrival: widget.message.secondsToArrival,
+              lastUpdated: widget.message.lastUpdated,
+              arrivalTimeMessage: widget.message.arrivalTimeMessage,
+            ),
+          ],
         ),
       ),
     );

@@ -41,28 +41,52 @@ class _RealTimeDisplayState extends State<RealTimeDisplay> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: _toggleDisplay,
-      child: _showCountdown
-          ? Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  TimeUtils.formatSecondsToArrival(
-                    widget.secondsToArrival,
-                    widget.lastUpdated,
-                  ),
-                  style: Theme.of(context).textTheme.labelSmall,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (_showCountdown)
+            Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.error,
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              constraints: BoxConstraints(
+                minWidth: 40,
+              ),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 8.0, vertical: 4.0),
+              margin: const EdgeInsets.symmetric(horizontal: 0.0),
+              child: Text(
+                TimeUtils.formatSecondsToArrival(
+                  widget.secondsToArrival,
+                  widget.lastUpdated,
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  widget.arrivalTimeMessage,
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-              ],
-            )
-          : Text(
-              widget.arrivalTimeMessage,
-              style: Theme.of(context).textTheme.labelLarge,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onError,
+                    ),
+              ),
             ),
+          Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            constraints: BoxConstraints(
+              minWidth: 40,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+            margin: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: Text(
+              widget.arrivalTimeMessage,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
