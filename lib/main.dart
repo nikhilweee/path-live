@@ -8,7 +8,7 @@ import 'dart:convert';
 import 'dart:async';
 
 import 'models/models.dart';
-import 'widgets/result_widget.dart';
+import 'widgets/station_widget.dart';
 import 'widgets/progress_bar.dart';
 
 void main() => runApp(const MyApp());
@@ -66,7 +66,7 @@ class _MainWidgetState extends State<MainWidget> {
     "33S": LatLong(40.7488743, -73.9886441),
   };
 
-  List<Result> _results = [];
+  List<Station> _stations = [];
   List<String> _filters = [];
   IconData _fabIcon = Icons.near_me_outlined;
   bool _isFabVisible = true;
@@ -131,16 +131,16 @@ class _MainWidgetState extends State<MainWidget> {
       final response = await http.get(
           Uri.parse('https://www.panynj.gov/bin/portauthority/ridepath.json'));
 
-      final results = response.statusCode == 200
+      final stations = response.statusCode == 200
           ? (json.decode(response.body)['results'] as List)
-              .map((json) => Result.fromJson(json))
+              .map((json) => Station.fromJson(json))
               .toList()
-          : <Result>[];
+          : <Station>[];
 
-      setState(() => _results = results);
+      setState(() => _stations = stations);
     } catch (e) {
       debugPrint('Error fetching data: $e');
-      setState(() => _results = []);
+      setState(() => _stations = []);
     }
   }
 
@@ -191,16 +191,29 @@ class _MainWidgetState extends State<MainWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredResults = _filters.isEmpty
-        ? _results
-        : _results
-            .where((r) => _filters.contains(r.consideredStation))
+    final filteredStations = _filters.isEmpty
+        ? _stations
+        : _stations
+            .where((s) => _filters.contains(s.consideredStation))
             .toList();
 
     return Scaffold(
       appBar: AppBar(
         title: Text("PATH Live", style: Theme.of(context).textTheme.titleLarge),
-        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AlertsPage(),
+                ),
+              );
+            },
+            tooltip: 'Alerts',
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: fetchJsonData,
@@ -208,7 +221,7 @@ class _MainWidgetState extends State<MainWidget> {
           children: [
             ProgressBar(
               duration: const Duration(seconds: 15),
-              color: Theme.of(context).colorScheme.onPrimary,
+              color: Theme.of(context).colorScheme.primary,
               backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
               onCompleted: fetchJsonData,
             ),
@@ -220,16 +233,16 @@ class _MainWidgetState extends State<MainWidget> {
               child: _buildFilterChips(),
             ),
             Expanded(
-              child: filteredResults.isEmpty
+              child: filteredStations.isEmpty
                   ? const Center(child: Text("Failed to load data"))
                   : ListView.builder(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       controller: _scrollController,
-                      itemCount: filteredResults.length,
-                      itemBuilder: (_, index) => ResultWidget(
+                      itemCount: filteredStations.length,
+                      itemBuilder: (_, index) => StationWidget(
                         key: ValueKey(
-                            'result_${filteredResults[index].consideredStation}'),
-                        result: filteredResults[index],
+                            'station_${filteredStations[index].consideredStation}'),
+                        station: filteredStations[index],
                       ),
                     ),
             ),
@@ -244,6 +257,150 @@ class _MainWidgetState extends State<MainWidget> {
           tooltip: 'Get Location',
           child: Icon(_fabIcon),
         ),
+      ),
+    );
+  }
+}
+
+class AlertsPage extends StatefulWidget {
+  const AlertsPage({super.key});
+
+  @override
+  _AlertsPageState createState() => _AlertsPageState();
+}
+
+class _AlertsPageState extends State<AlertsPage> {
+  List<Incident> _alerts = [];
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCachedAlerts();
+  }
+
+  Future<void> _loadCachedAlerts() async {
+    final prefs = await SharedPreferences.getInstance();
+    final cachedAlertsJson = prefs.getString('cached_alerts');
+
+    if (cachedAlertsJson != null) {
+      try {
+        final List<dynamic> alertsList = json.decode(cachedAlertsJson);
+        setState(() {
+          _alerts = alertsList.map((json) => Incident.fromJson(json)).toList();
+        });
+      } catch (e) {
+        debugPrint('Error loading cached alerts: $e');
+      }
+    }
+
+    // Only show loading if we have no cached alerts
+    if (_alerts.isEmpty) {
+      _fetchAlerts(showLoading: true);
+    } else {
+      // Fetch fresh alerts in background without showing loading
+      _fetchAlerts(showLoading: false);
+    }
+  }
+
+  Future<void> _fetchAlerts({bool showLoading = false}) async {
+    if (!mounted) return;
+    if (showLoading) {
+      setState(() => _isLoading = true);
+    }
+
+    print("Fetching Alerts");
+
+    try {
+      final response = await http.get(Uri.parse(
+          'https://www.panynj.gov/bin/portauthority/everbridge/incidents'));
+
+      if (!mounted) return;
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        if (jsonData['status'] == 'Success' && jsonData['data'] != null) {
+          print("Fetched Alerts");
+
+          final incidents = (jsonData['data'] as List)
+              .map((json) => Incident.fromJson(json))
+              .toList();
+          setState(() => _alerts = incidents);
+
+          // Cache the alerts
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('cached_alerts', json.encode(jsonData['data']));
+        } else {
+          setState(() => _alerts = []);
+        }
+      } else {
+        setState(() => _alerts = []);
+      }
+    } catch (e) {
+      debugPrint('Error fetching alerts: $e');
+      if (mounted) setState(() => _alerts = []);
+    } finally {
+      if (mounted && showLoading) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Alerts", style: Theme.of(context).textTheme.titleLarge),
+      ),
+      body: RefreshIndicator(
+        onRefresh: _fetchAlerts,
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _alerts.isEmpty
+                ? const Center(child: Text("No alerts"))
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16.0),
+                    itemCount: _alerts.length,
+                    itemBuilder: (context, index) {
+                      final alert = _alerts[index];
+
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 12.0),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                alert.subject,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              ),
+                              const SizedBox(height: 8.0),
+                              Text(
+                                alert.preMessage,
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                              const SizedBox(height: 8.0),
+                              Text(
+                                alert.formattedModifiedDate,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant,
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
       ),
     );
   }

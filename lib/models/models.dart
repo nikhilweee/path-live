@@ -5,7 +5,7 @@ class LatLong {
   const LatLong(this.latitude, this.longitude);
 }
 
-class Message {
+class Train {
   final String target;
   final String secondsToArrival;
   final String arrivalTimeMessage;
@@ -13,7 +13,7 @@ class Message {
   final String headSign;
   final String lastUpdated;
 
-  const Message({
+  const Train({
     required this.target,
     required this.secondsToArrival,
     required this.arrivalTimeMessage,
@@ -22,8 +22,8 @@ class Message {
     required this.lastUpdated,
   });
 
-  factory Message.fromJson(Map<String, dynamic> json) {
-    return Message(
+  factory Train.fromJson(Map<String, dynamic> json) {
+    return Train(
       target: json['target'],
       secondsToArrival: json['secondsToArrival'],
       arrivalTimeMessage: json['arrivalTimeMessage'],
@@ -36,24 +36,24 @@ class Message {
 
 class Destination {
   final String label;
-  final List<Message> messages;
+  final List<Train> trains;
 
   const Destination({
     required this.label,
-    required this.messages,
+    required this.trains,
   });
 
   factory Destination.fromJson(Map<String, dynamic> json) {
     return Destination(
       label: json['label'],
-      messages: (json['messages'] as List)
-          .map((messageJson) => Message.fromJson(messageJson))
+      trains: (json['messages'] as List)
+          .map((trainJson) => Train.fromJson(trainJson))
           .toList(),
     );
   }
 }
 
-class Result {
+class Station {
   final String consideredStation;
   final List<Destination> destinations;
   final String consideredStationFullName;
@@ -74,22 +74,80 @@ class Result {
     "33S": "33rd Street"
   };
 
-  const Result({
+  const Station({
     required this.consideredStation,
     required this.destinations,
     required this.consideredStationFullName,
   });
 
-  factory Result.fromJson(Map<String, dynamic> json) {
+  factory Station.fromJson(Map<String, dynamic> json) {
     String stationCode = json['consideredStation'];
     String consideredStationFullName = stationNames[stationCode] ?? stationCode;
 
-    return Result(
+    return Station(
       consideredStation: json['consideredStation'],
       consideredStationFullName: consideredStationFullName,
       destinations: (json['destinations'] as List)
           .map((destinationJson) => Destination.fromJson(destinationJson))
           .toList(),
     );
+  }
+}
+
+class Incident {
+  final String subject;
+  final String preMessage;
+  final String createdDate;
+  final String modifiedDate;
+
+  const Incident({
+    required this.subject,
+    required this.preMessage,
+    required this.createdDate,
+    required this.modifiedDate,
+  });
+
+  factory Incident.fromJson(Map<String, dynamic> json) {
+    final incidentMessage = json['incidentMessage'] ?? {};
+    return Incident(
+      subject: incidentMessage['subject'] ?? '',
+      preMessage: incidentMessage['preMessage'] ?? '',
+      createdDate: json['CreatedDate'] ?? '',
+      modifiedDate: json['ModifiedDate'] ?? '',
+    );
+  }
+
+  DateTime get createdDateTime {
+    try {
+      return DateTime.fromMillisecondsSinceEpoch(int.parse(createdDate));
+    } catch (e) {
+      return DateTime.now();
+    }
+  }
+
+  DateTime get modifiedDateTime {
+    try {
+      return DateTime.fromMillisecondsSinceEpoch(int.parse(modifiedDate));
+    } catch (e) {
+      return DateTime.now();
+    }
+  }
+
+  String get formattedCreatedDate {
+    final date = createdDateTime;
+
+    String hour = date.hour.toString().padLeft(2, '0');
+    String minute = date.minute.toString().padLeft(2, '0');
+
+    return '${date.month}/${date.day}/${date.year} $hour:$minute';
+  }
+
+  String get formattedModifiedDate {
+    final date = modifiedDateTime;
+
+    String hour = date.hour.toString().padLeft(2, '0');
+    String minute = date.minute.toString().padLeft(2, '0');
+
+    return '${date.month}/${date.day}/${date.year} $hour:$minute';
   }
 }

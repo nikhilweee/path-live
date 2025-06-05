@@ -53,8 +53,8 @@ class _RealTimeDisplayState extends State<RealTimeDisplay> {
               constraints: BoxConstraints(
                 minWidth: 40,
               ),
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 8.0, vertical: 4.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
               margin: const EdgeInsets.symmetric(horizontal: 0.0),
               child: Text(
                 TimeUtils.formatSecondsToArrival(

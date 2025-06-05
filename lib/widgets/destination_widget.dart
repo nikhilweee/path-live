@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
-import 'message_card.dart';
+import 'train_card.dart';
 
 class DestinationWidget extends StatelessWidget {
   final Destination destination;
@@ -14,14 +14,14 @@ class DestinationWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: destination.messages
+      children: destination.trains
           .asMap()
           .entries
-          .map<Widget>((entry) => MessageCard(
+          .map<Widget>((entry) => TrainCard(
                 key: ValueKey(
-                  'message_${entry.key}',
+                  'train_${entry.key}',
                 ),
-                message: entry.value,
+                train: entry.value,
               ))
           .toList(),
     );

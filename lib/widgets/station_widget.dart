@@ -3,19 +3,19 @@ import 'dart:async';
 import '../models/models.dart';
 import 'destination_widget.dart';
 
-class ResultWidget extends StatefulWidget {
-  final Result result;
+class StationWidget extends StatefulWidget {
+  final Station station;
 
-  const ResultWidget({
+  const StationWidget({
     super.key,
-    required this.result,
+    required this.station,
   });
 
   @override
-  _ResultWidgetState createState() => _ResultWidgetState();
+  _StationWidgetState createState() => _StationWidgetState();
 }
 
-class _ResultWidgetState extends State<ResultWidget> {
+class _StationWidgetState extends State<StationWidget> {
   late Timer _timer;
 
   @override
@@ -33,7 +33,7 @@ class _ResultWidgetState extends State<ResultWidget> {
   void _startTimer() {
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       setState(() {
-        // This will trigger a rebuild of the entire ResultCard and its children
+        // This will trigger a rebuild of the entire StationWidget and its children
       });
     });
   }
@@ -49,14 +49,14 @@ class _ResultWidgetState extends State<ResultWidget> {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  widget.result.consideredStationFullName,
+                  widget.station.consideredStationFullName,
                   style: Theme.of(context).textTheme.labelLarge,
                 ),
               ),
             ),
           ),
         ),
-        ...widget.result.destinations.map<Widget>((destination) {
+        ...widget.station.destinations.map<Widget>((destination) {
           return DestinationWidget(
             key: ValueKey('destination_${destination.label}'),
             destination: destination,
