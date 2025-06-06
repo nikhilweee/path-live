@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import '../models/models.dart';
 import 'destination_widget.dart';
+import '../pages/station_details_page.dart';
 
 class StationWidget extends StatefulWidget {
   final Station station;
@@ -44,13 +45,22 @@ class _StationWidgetState extends State<StationWidget> {
       children: [
         Padding(
           padding: const EdgeInsets.only(top: 16.0),
-          child: Card.outlined(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  widget.station.consideredStationFullName,
-                  style: Theme.of(context).textTheme.labelLarge,
+          child: GestureDetector(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => StationDetailsPage(station: widget.station),
+                ),
+              );
+            },
+            child: Card.outlined(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    widget.station.consideredStationFullName,
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
                 ),
               ),
             ),
