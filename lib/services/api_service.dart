@@ -57,12 +57,14 @@ class ApiService {
   }
 
   // PATH database API functionality
-  static const String _pathBaseUrl = 'https://path-mppprod-app.azurewebsites.net/api/v3';
+  static const String _pathBaseUrl =
+      'https://path-mppprod-app.azurewebsites.net/api/v3';
   static const String _configEndpoint = '$_pathBaseUrl/Config/Fetch';
   static const String _datafileEndpoint = '$_pathBaseUrl/file/datafile';
 
   /// Builds headers for PATH API requests
-  static Future<Map<String, String>> _buildPathHeaders([bool includeContentType = false]) async {
+  static Future<Map<String, String>> _buildPathHeaders(
+      [bool includeContentType = false]) async {
     return {
       'AuthKey': await StorageService.getAuthKey(),
       'AppVersion': '6.1.0',
@@ -117,7 +119,7 @@ class ApiService {
       }
 
       final dbPath = await getDatabasePath();
-      final zipPath = '${dbPath}.zip';
+      final zipPath = '$dbPath.zip';
 
       // Write, extract, and cleanup zip
       await File(zipPath).writeAsBytes(response.bodyBytes);
@@ -149,7 +151,7 @@ class ApiService {
 
       // Return existing path if database is fresh
       if (dbExists && !shouldDownload) {
-        debugPrint('Database is fresh');
+        debugPrint('Database downloaded recently');
         return dbPath;
       }
 
@@ -161,7 +163,8 @@ class ApiService {
       }
 
       final currentChecksum = await StorageService.getDbChecksum();
-      final needsUpdate = !dbExists || shouldDownload || latestChecksum != currentChecksum;
+      final needsUpdate =
+          !dbExists || shouldDownload || latestChecksum != currentChecksum;
 
       if (!needsUpdate) {
         debugPrint('Database is up to date');
