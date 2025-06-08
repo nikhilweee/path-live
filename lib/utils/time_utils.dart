@@ -1,4 +1,19 @@
 class TimeUtils {
+  /// Formats time from "HH:MM:SS" to "HH:MM"
+  static String formatTime(String timeString) {
+    final parts = timeString.split(':');
+    if (parts.length >= 2) {
+      return '${parts[0]}:${parts[1]}';
+    }
+    return timeString;
+  }
+
+  /// Gets current time in "HH:MM:SS" format
+  static String getCurrentTimeString() {
+    final now = DateTime.now();
+    return '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:00';
+  }
+
   /// Calculates remaining seconds until arrival based on original data and current time
   static int remainingSeconds(String secondsToArrival, String lastUpdated) {
     final lastUpdatedTime = DateTime.parse(lastUpdated);

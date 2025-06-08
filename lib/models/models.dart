@@ -139,7 +139,7 @@ class Incident {
     String hour = date.hour.toString().padLeft(2, '0');
     String minute = date.minute.toString().padLeft(2, '0');
 
-    return '${date.month}/${date.day}/${date.year} $hour:$minute';
+    return '${date.month}/${date.day} $hour:$minute';
   }
 
   String get formattedModifiedDate {
@@ -148,6 +148,6 @@ class Incident {
     String hour = date.hour.toString().padLeft(2, '0');
     String minute = date.minute.toString().padLeft(2, '0');
 
-    return '${date.month}/${date.day}/${date.year} $hour:$minute';
+    return '${date.month}/${date.day} $hour:$minute';
   }
 }

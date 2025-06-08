@@ -157,7 +157,7 @@ class _MainPageState extends State<MainPage> {
               color: Theme.of(context).colorScheme.surface,
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
-              height: _isFabVisible ? 60 : 0.0,
+              height: _isFabVisible ? 60 : 0,
               child: _buildFilterChips(),
             ),
             Expanded(

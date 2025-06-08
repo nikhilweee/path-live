@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/database_service.dart';
+import '../utils/time_utils.dart';
 import 'color_circle.dart';
 
 class ScheduleCard extends StatelessWidget {
@@ -10,22 +11,13 @@ class ScheduleCard extends StatelessWidget {
     required this.schedule,
   });
 
-  String _formatDepartureTime(String departureTime) {
-    // departureTime is in format "HH:MM:SS", we want "HH:MM"
-    final parts = departureTime.split(':');
-    if (parts.length >= 2) {
-      return '${parts[0]}:${parts[1]}';
-    }
-    return departureTime;
-  }
-
   @override
   Widget build(BuildContext context) {
-    // Build colors list based on available route colors
-    List<String> colors = [schedule.routeColor];
-    if (schedule.routeSecondaryRouteColor?.isNotEmpty == true) {
-      colors.add(schedule.routeSecondaryRouteColor!);
-    }
+    final colors = [
+      schedule.routeColor,
+      if (schedule.routeSecondaryRouteColor?.isNotEmpty == true) 
+        schedule.routeSecondaryRouteColor!,
+    ];
 
     return Card(
       child: Row(
@@ -53,7 +45,7 @@ class ScheduleCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
             margin: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Text(
-              _formatDepartureTime(schedule.departureTime),
+              TimeUtils.formatTime(schedule.departureTime),
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onPrimary,

@@ -10,20 +10,22 @@ class ColorCircleWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final parsedColors = colors.map(_parseColor).toList();
+    
     return Container(
       width: 15,
       height: 15,
       margin: const EdgeInsets.only(right: 8.0),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: colors.length == 2
+        gradient: parsedColors.length == 2
             ? LinearGradient(
-                colors: colors.map((color) => _parseColor(color)).toList(),
+                colors: parsedColors,
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
                 stops: const [0.5, 0.5])
             : null,
-        color: colors.length == 1 ? _parseColor(colors[0]) : null,
+        color: parsedColors.length == 1 ? parsedColors.first : null,
       ),
     );
   }

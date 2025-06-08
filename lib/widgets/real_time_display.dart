@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../utils/time_utils.dart';
 
 class RealTimeDisplay extends StatefulWidget {
@@ -19,16 +20,47 @@ class RealTimeDisplay extends StatefulWidget {
 
 class _RealTimeDisplayState extends State<RealTimeDisplay> {
   late bool _showCountdown;
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
-    // Show countdown only when time left is less than 10 mins.
-    int seconds = TimeUtils.remainingSeconds(
+    _updateCountdownVisibility();
+    _startTimer();
+  }
+
+  @override
+  void didUpdateWidget(RealTimeDisplay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.secondsToArrival != widget.secondsToArrival ||
+        oldWidget.lastUpdated != widget.lastUpdated) {
+      _updateCountdownVisibility();
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _updateCountdownVisibility() {
+    final seconds = TimeUtils.remainingSeconds(
       widget.secondsToArrival,
       widget.lastUpdated,
     );
     _showCountdown = seconds < 600;
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) {
+        setState(() {
+          _updateCountdownVisibility();
+        });
+      }
+    });
   }
 
   void _toggleDisplay() {
