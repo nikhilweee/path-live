@@ -5,17 +5,19 @@ import 'color_circle.dart';
 
 class ScheduleCard extends StatelessWidget {
   final TrainSchedule schedule;
+  final bool isPast;
 
   const ScheduleCard({
     super.key,
     required this.schedule,
+    this.isPast = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final colors = [
       schedule.routeColor,
-      if (schedule.routeSecondaryRouteColor?.isNotEmpty == true) 
+      if (schedule.routeSecondaryRouteColor?.isNotEmpty == true)
         schedule.routeSecondaryRouteColor!,
     ];
 
@@ -36,7 +38,9 @@ class ScheduleCard extends StatelessWidget {
           ),
           Container(
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary,
+              color: isPast
+                  ? Theme.of(context).colorScheme.error
+                  : Theme.of(context).colorScheme.primary,
               borderRadius: BorderRadius.circular(8.0),
             ),
             constraints: const BoxConstraints(
@@ -48,7 +52,9 @@ class ScheduleCard extends StatelessWidget {
               TimeUtils.formatTime(schedule.departureTime),
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onPrimary,
+                    color: isPast
+                        ? Theme.of(context).colorScheme.onError
+                        : Theme.of(context).colorScheme.onPrimary,
                   ),
             ),
           ),

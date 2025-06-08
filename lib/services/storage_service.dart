@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 
 import '../models/models.dart';
 
-class StorageService {  static const String _filtersKey = 'filters';
+class StorageService {
+  static const String _filtersKey = 'filters';
   static const String _cachedAlertsKey = 'cached_alerts';
   static const String _authKeyKey = 'auth_key';
   static const String _dbChecksumKey = 'db_checksum';
@@ -101,7 +102,9 @@ class StorageService {  static const String _filtersKey = 'filters';
     try {
       final prefs = await SharedPreferences.getInstance();
       final timestamp = prefs.getInt(_lastDbDownloadKey);
-      return timestamp != null ? DateTime.fromMillisecondsSinceEpoch(timestamp) : null;
+      return timestamp != null
+          ? DateTime.fromMillisecondsSinceEpoch(timestamp)
+          : null;
     } catch (e) {
       debugPrint('Error loading last DB download time: $e');
       return null;
@@ -121,7 +124,7 @@ class StorageService {  static const String _filtersKey = 'filters';
     try {
       final lastDownload = await getLastDbDownloadTime();
       if (lastDownload == null) return true; // Never downloaded
-      
+
       final timeSinceLastDownload = DateTime.now().difference(lastDownload);
       return timeSinceLastDownload.inHours >= 6;
     } catch (e) {

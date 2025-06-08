@@ -36,10 +36,10 @@ class _SchedulesPageState extends State<SchedulesPage> {
 
   (List<TrainSchedule>, List<TrainSchedule>) get _splitTrains {
     final currentTimeString = TimeUtils.getCurrentTimeString();
-    
+
     final pastTrains = <TrainSchedule>[];
     final futureTrains = <TrainSchedule>[];
-    
+
     for (final train in _filteredTrains) {
       if (train.departureTime.compareTo(currentTimeString) <= 0) {
         pastTrains.add(train);
@@ -47,7 +47,7 @@ class _SchedulesPageState extends State<SchedulesPage> {
         futureTrains.add(train);
       }
     }
-    
+
     return (pastTrains, futureTrains);
   }
 
@@ -89,10 +89,12 @@ class _SchedulesPageState extends State<SchedulesPage> {
       if (dbPath != null) {
         await _loadUpcomingTrains();
       } else {
-        _updateState(isLoading: false, statusMessage: 'Failed to update database');
+        _updateState(
+            isLoading: false, statusMessage: 'Failed to update database');
       }
     } catch (e) {
-      _updateState(isLoading: false, statusMessage: 'Failed to update database: $e');
+      _updateState(
+          isLoading: false, statusMessage: 'Failed to update database: $e');
     }
   }
 
@@ -103,46 +105,24 @@ class _SchedulesPageState extends State<SchedulesPage> {
       );
       _updateState(isLoading: false, allTrains: trains);
     } catch (e) {
-      _updateState(isLoading: false, statusMessage: 'Failed to load train schedules: $e');
+      _updateState(
+          isLoading: false,
+          statusMessage: 'Failed to load train schedules: $e');
     }
-  }
-
-  Widget _buildUpcomingDivider() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        children: [
-          Expanded(child: Divider(color: Theme.of(context).colorScheme.outline)),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Text(
-              'UPCOMING',
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: Theme.of(context).colorScheme.outline,
-              ),
-            ),
-          ),
-          Expanded(child: Divider(color: Theme.of(context).colorScheme.outline)),
-        ],
-      ),
-    );
   }
 
   List<Widget> _buildTrainList() {
     final (pastTrains, futureTrains) = _splitTrains;
     final widgets = <Widget>[];
-    
+
     // Add past trains
-    widgets.addAll(pastTrains.map((train) => ScheduleCard(schedule: train)));
-    
-    // Add divider if there are both past and future trains
-    if (pastTrains.isNotEmpty && futureTrains.isNotEmpty) {
-      widgets.add(_buildUpcomingDivider());
-    }
-    
+    widgets.addAll(
+        pastTrains.map((train) => ScheduleCard(schedule: train, isPast: true)));
+
     // Add future trains
-    widgets.addAll(futureTrains.map((train) => ScheduleCard(schedule: train)));
-    
+    widgets.addAll(futureTrains
+        .map((train) => ScheduleCard(schedule: train, isPast: false)));
+
     return widgets;
   }
 
@@ -155,27 +135,26 @@ class _SchedulesPageState extends State<SchedulesPage> {
   }
 
   Widget _buildFilterChips() {
-    final uniqueRoutes = _allTrains
-        .map((train) => train.routeNameShort)
-        .toSet()
-        .toList();
+    final uniqueRoutes =
+        _allTrains.map((train) => train.routeNameShort).toSet().toList();
 
     if (uniqueRoutes.isEmpty) return const SizedBox.shrink();
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      child: Padding(
-        padding: const EdgeInsets.all(4.0),
-        child: Wrap(
-          spacing: 8.0,
-          children: uniqueRoutes.map((route) => 
-            FilterChip(
-              label: Text(route),
-              selected: _selectedRoutes.contains(route),
-              onSelected: (_) => _toggleRouteFilter(route),
-            ),
-          ).toList(),
-        ),
+      child: Row(
+        children: uniqueRoutes
+            .map(
+              (route) => Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: FilterChip(
+                  label: Text(route),
+                  selected: _selectedRoutes.contains(route),
+                  onSelected: (_) => _toggleRouteFilter(route),
+                ),
+              ),
+            )
+            .toList(),
       ),
     );
   }
@@ -192,6 +171,7 @@ class _SchedulesPageState extends State<SchedulesPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.station.consideredStationFullName),
+        forceMaterialTransparency: true,
       ),
       body: RefreshIndicator(
         onRefresh: _updateDatabase,
@@ -205,8 +185,8 @@ class _SchedulesPageState extends State<SchedulesPage> {
               color: Theme.of(context).colorScheme.surface,
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
-              // TODO: Fix Animations
-              height: _isFilterVisible ? 60 : 60,
+              // TODO: Fix Animation
+              height: _isFilterVisible ? 50 : 50,
               child: _buildFilterChips(),
             ),
             if (_statusMessage != null)

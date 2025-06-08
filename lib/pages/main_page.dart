@@ -47,7 +47,7 @@ class _MainPageState extends State<MainPage> {
 
   Future<void> _requestLocationPermission() async {
     final hasPermission = await LocationService.requestLocationPermission();
-    
+
     if (hasPermission) {
       await _getUserLocation();
     }
@@ -55,7 +55,7 @@ class _MainPageState extends State<MainPage> {
 
   Future<void> _getUserLocation() async {
     final closestStation = await LocationService.getClosestStation();
-    
+
     if (closestStation != null) {
       setState(() {
         _fabIcon = Icons.near_me;
@@ -91,18 +91,17 @@ class _MainPageState extends State<MainPage> {
   Widget _buildFilterChips() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      child: Padding(
-        padding: const EdgeInsets.all(4.0),
-        child: Wrap(
-          spacing: 8.0,
-          children: LocationService.stationCoordinates.keys
-              .map((station) => FilterChip(
+      child: Row(
+        children: LocationService.stationCoordinates.keys
+            .map((station) => Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  child: FilterChip(
                     label: Text(station),
                     selected: _filters.contains(station),
                     onSelected: (_) => _toggleFilter(station),
-                  ))
-              .toList(),
-        ),
+                  ),
+                ))
+            .toList(),
       ),
     );
   }
@@ -135,6 +134,7 @@ class _MainPageState extends State<MainPage> {
           'PATH Live',
           style: Theme.of(context).textTheme.titleLarge,
         ),
+        forceMaterialTransparency: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
@@ -154,10 +154,11 @@ class _MainPageState extends State<MainPage> {
               onCompleted: _fetchStations,
             ),
             AnimatedContainer(
-              color: Theme.of(context).colorScheme.surface,
+              color: Theme.of(context).colorScheme.surfaceContainerLow,
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
-              height: _isFabVisible ? 60 : 0,
+              // TODO: Fix Animation
+              height: _isFabVisible ? 50 : 50,
               child: _buildFilterChips(),
             ),
             Expanded(

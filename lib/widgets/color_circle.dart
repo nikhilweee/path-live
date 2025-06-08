@@ -11,7 +11,7 @@ class ColorCircleWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final parsedColors = colors.map(_parseColor).toList();
-    
+
     return Container(
       width: 15,
       height: 15,

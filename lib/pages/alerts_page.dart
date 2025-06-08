@@ -55,6 +55,7 @@ class _AlertsPageState extends State<AlertsPage> {
           'Alerts',
           style: Theme.of(context).textTheme.titleLarge,
         ),
+        forceMaterialTransparency: true,
       ),
       body: RefreshIndicator(
         onRefresh: _fetchAlerts,
