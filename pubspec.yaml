@@ -99,3 +99,5 @@ flutter:
 flutter_launcher_icons:
   image_path: "assets/icon/path-live.png"
   android: true
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/icon/path-live.png"
