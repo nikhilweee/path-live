@@ -100,8 +100,8 @@ class DatabaseService {
       tz.initializeTimeZones();
       final nyLocation = tz.getLocation('America/New_York');
       final nowNY = tz.TZDateTime.now(nyLocation);
-      final startTime = nowNY.subtract(const Duration(hours: 3));
-      final endTime = nowNY.add(const Duration(hours: 3));
+      final startTime = nowNY.subtract(const Duration(hours: 6));
+      final endTime = nowNY.add(const Duration(hours: 6));
 
       final timeStart = _formatTime(startTime);
       final timeEnd = _formatTime(endTime);

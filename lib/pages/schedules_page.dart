@@ -226,7 +226,7 @@ class _SchedulesPageState extends State<SchedulesPage> {
               Expanded(
                 child: ListView(
                   controller: _scrollController,
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   children: _buildTrainList(),
                 ),
               )

@@ -179,7 +179,7 @@ class _MainPageState extends State<MainPage> {
               onCompleted: _fetchStations,
             ),
             AnimatedContainer(
-              color: Theme.of(context).colorScheme.surfaceContainerLow,
+              color: Theme.of(context).colorScheme.surface,
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
               // TODO: Fix Animation
@@ -190,7 +190,7 @@ class _MainPageState extends State<MainPage> {
               child: filteredStations.isEmpty
                   ? const Center(child: Text('Failed to load data'))
                   : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       controller: _scrollController,
                       itemCount: filteredStations.length,
                       itemBuilder: (context, index) => StationWidget(
