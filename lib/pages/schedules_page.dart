@@ -48,7 +48,13 @@ class _SchedulesPageState extends State<SchedulesPage> {
       }
     }
 
-    return (pastTrains, futureTrains);
+    pastTrains.sort((a, b) => b.departureTime.compareTo(a.departureTime));
+    final limitedPastTrains = pastTrains.take(5).toList();
+
+    futureTrains.sort((a, b) => a.departureTime.compareTo(b.departureTime));
+    final limitedFutureTrains = futureTrains.take(20).toList();
+
+    return (limitedPastTrains, limitedFutureTrains);
   }
 
   @override

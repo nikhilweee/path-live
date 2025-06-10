@@ -29,3 +29,9 @@ Install the built APK to a connected device
 ```
 adb install build/app/outputs/flutter-apk/app-release.apk
 ```
+
+Update app icons after editing `pubspec.yaml` with the correct paths
+
+```
+dart run flutter_launcher_icons
+```
