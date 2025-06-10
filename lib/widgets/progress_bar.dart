@@ -34,6 +34,17 @@ class _ProgressBarState extends State<ProgressBar>
     _animationController.forward();
   }
 
+  @override
+  void didUpdateWidget(ProgressBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.duration != widget.duration) {
+      _animationController.duration = widget.duration;
+      if (!_isRefreshing) {
+        _animationController.forward(from: 0.0);
+      }
+    }
+  }
+
   void _handleAnimationStatus(AnimationStatus status) async {
     if (status == AnimationStatus.completed && !_isRefreshing) {
       _isRefreshing = true;

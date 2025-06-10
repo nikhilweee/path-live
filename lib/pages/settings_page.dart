@@ -22,6 +22,13 @@ class _SettingsPageState extends State<SettingsPage> {
       'labels': ['15s', '30s', '60s'],
     },
     {
+      'key': 'countdownThreshold',
+      'title': 'Countdown timer',
+      'subtitle': 'When to show countdown',
+      'options': [0, 300, 900],
+      'labels': ['Never', '5min', '15min'],
+    },
+    {
       'key': 'previousTrainsCount',
       'title': 'Previous trains',
       'subtitle': 'Past trains to show',
@@ -35,13 +42,6 @@ class _SettingsPageState extends State<SettingsPage> {
       'options': [10, 25, 50],
       'labels': ['10', '25', '50'],
     },
-    {
-      'key': 'countdownThreshold',
-      'title': 'Countdown timer',
-      'subtitle': 'When to show countdown',
-      'options': [0, 300, 600],
-      'labels': ['Never', '5min', '10min'],
-    },
   ];
 
   @override
@@ -53,16 +53,16 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _loadSettings() async {
     final values = await Future.wait([
       StorageService.getProgressBarDuration(),
+      StorageService.getCountdownThreshold(),
       StorageService.getPreviousTrainsCount(),
       StorageService.getFutureTrainsCount(),
-      StorageService.getCountdownThreshold(),
     ]);
 
     setState(() {
       _settings['progressBarDuration'] = values[0];
-      _settings['previousTrainsCount'] = values[1];
-      _settings['futureTrainsCount'] = values[2];
-      _settings['countdownThreshold'] = values[3];
+      _settings['countdownThreshold'] = values[1];
+      _settings['previousTrainsCount'] = values[2];
+      _settings['futureTrainsCount'] = values[3];
       _isLoading = false;
     });
   }

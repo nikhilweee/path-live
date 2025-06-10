@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
 import '../models/models.dart';
 import 'destination_widget.dart';
 import '../pages/schedules_page.dart';
@@ -17,26 +16,9 @@ class StationWidget extends StatefulWidget {
 }
 
 class _StationWidgetState extends State<StationWidget> {
-  late Timer _timer;
-
   @override
   void initState() {
     super.initState();
-    _startTimer();
-  }
-
-  @override
-  void dispose() {
-    _timer.cancel();
-    super.dispose();
-  }
-
-  void _startTimer() {
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
-      setState(() {
-        // This will trigger a rebuild of the entire StationWidget and its children
-      });
-    });
   }
 
   @override

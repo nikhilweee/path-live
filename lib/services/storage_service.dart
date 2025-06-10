@@ -26,8 +26,8 @@ class StorageService {
   static const Map<String, int> _trainDisplayDefaults = {
     _previousTrainsCountKey: 5,
     _futureTrainsCountKey: 25,
-    _progressBarDurationKey: 15,
-    _countdownThresholdKey: 600,
+    _progressBarDurationKey: 30,
+    _countdownThresholdKey: 300,
   };
 
   // Generic helper methods
