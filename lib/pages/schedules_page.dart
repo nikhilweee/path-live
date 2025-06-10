@@ -3,6 +3,7 @@ import 'package:flutter/rendering.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
 import '../services/database_service.dart';
+import '../services/storage_service.dart';
 import '../utils/time_utils.dart';
 import '../widgets/schedule_card.dart';
 
@@ -26,6 +27,8 @@ class _SchedulesPageState extends State<SchedulesPage> {
   List<TrainSchedule> _allTrains = [];
   Set<String> _selectedRoutes = {};
   bool _isFilterVisible = true;
+  int _previousTrainsCount = 5;
+  int _futureTrainsCount = 20;
 
   List<TrainSchedule> get _filteredTrains {
     if (_selectedRoutes.isEmpty) return _allTrains;
@@ -49,10 +52,10 @@ class _SchedulesPageState extends State<SchedulesPage> {
     }
 
     pastTrains.sort((a, b) => b.departureTime.compareTo(a.departureTime));
-    final limitedPastTrains = pastTrains.take(5).toList();
+    final limitedPastTrains = pastTrains.take(_previousTrainsCount).toList();
 
     futureTrains.sort((a, b) => a.departureTime.compareTo(b.departureTime));
-    final limitedFutureTrains = futureTrains.take(20).toList();
+    final limitedFutureTrains = futureTrains.take(_futureTrainsCount).toList();
 
     return (limitedPastTrains, limitedFutureTrains);
   }
@@ -61,7 +64,18 @@ class _SchedulesPageState extends State<SchedulesPage> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    _loadSettings();
     _updateDatabase();
+  }
+
+  Future<void> _loadSettings() async {
+    final previousCount = await StorageService.getPreviousTrainsCount();
+    final futureCount = await StorageService.getFutureTrainsCount();
+    
+    setState(() {
+      _previousTrainsCount = previousCount;
+      _futureTrainsCount = futureCount;
+    });
   }
 
   void _onScroll() {
@@ -89,6 +103,9 @@ class _SchedulesPageState extends State<SchedulesPage> {
 
   Future<void> _updateDatabase() async {
     _updateState(isLoading: true, statusMessage: null);
+
+    // Reload settings in case they changed
+    await _loadSettings();
 
     try {
       final dbPath = await ApiService.updatePathDatabase();

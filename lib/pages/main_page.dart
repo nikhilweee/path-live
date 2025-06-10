@@ -8,6 +8,7 @@ import '../services/storage_service.dart';
 import '../widgets/station_widget.dart';
 import '../widgets/progress_bar.dart';
 import 'alerts_page.dart';
+import 'settings_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -23,6 +24,7 @@ class _MainPageState extends State<MainPage> {
   List<String> _filters = [];
   IconData _fabIcon = Icons.near_me_outlined;
   bool _isFabVisible = true;
+  int _progressBarDuration = 15; // default value
 
   @override
   void initState() {
@@ -33,6 +35,7 @@ class _MainPageState extends State<MainPage> {
 
   Future<void> _initialize() async {
     await _loadFilters();
+    await _loadProgressBarDuration();
     await _fetchStations();
   }
 
@@ -75,6 +78,11 @@ class _MainPageState extends State<MainPage> {
     setState(() => _filters = filters);
   }
 
+  Future<void> _loadProgressBarDuration() async {
+    final duration = await StorageService.getProgressBarDuration();
+    setState(() => _progressBarDuration = duration);
+  }
+
   Future<void> _saveFilters() async {
     await StorageService.saveFilters(_filters);
   }
@@ -113,6 +121,16 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
+  void _navigateToSettings() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SettingsPage()),
+    ).then((_) {
+      // Reload settings when returning from settings page
+      _loadProgressBarDuration();
+    });
+  }
+
   @override
   void dispose() {
     _scrollController.removeListener(_onScroll);
@@ -137,6 +155,11 @@ class _MainPageState extends State<MainPage> {
         forceMaterialTransparency: true,
         actions: [
           IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: _navigateToSettings,
+            tooltip: 'Settings',
+          ),
+          IconButton(
             icon: const Icon(Icons.notifications_outlined),
             onPressed: _navigateToAlerts,
             tooltip: 'Alerts',
@@ -148,7 +171,7 @@ class _MainPageState extends State<MainPage> {
         child: Column(
           children: [
             ProgressBar(
-              duration: const Duration(seconds: 15),
+              duration: Duration(seconds: _progressBarDuration),
               color: Theme.of(context).colorScheme.primary,
               backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
               onCompleted: _fetchStations,

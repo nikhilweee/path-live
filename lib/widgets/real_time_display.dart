@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../utils/time_utils.dart';
+import '../services/storage_service.dart';
 
 class RealTimeDisplay extends StatefulWidget {
   final String secondsToArrival;
@@ -21,10 +22,12 @@ class RealTimeDisplay extends StatefulWidget {
 class _RealTimeDisplayState extends State<RealTimeDisplay> {
   late bool _showCountdown;
   Timer? _timer;
+  int _countdownThreshold = 600; // Default value, will be updated from settings
 
   @override
   void initState() {
     super.initState();
+    _loadCountdownThreshold();
     _updateCountdownVisibility();
     _startTimer();
   }
@@ -49,7 +52,17 @@ class _RealTimeDisplayState extends State<RealTimeDisplay> {
       widget.secondsToArrival,
       widget.lastUpdated,
     );
-    _showCountdown = seconds < 600;
+    _showCountdown = _countdownThreshold == 0 ? false : seconds < _countdownThreshold;
+  }
+
+  Future<void> _loadCountdownThreshold() async {
+    final threshold = await StorageService.getCountdownThreshold();
+    if (mounted) {
+      setState(() {
+        _countdownThreshold = threshold;
+        _updateCountdownVisibility();
+      });
+    }
   }
 
   void _startTimer() {

@@ -78,6 +78,7 @@ class DatabaseService {
           JOIN [gtfs.master.routes_additional_info] raf ON raf.route_id = r.route_id
           -- Filter out departures for the last stop
           JOIN [gtfs.gen.schedule_stops] ss ON ss.trip_id = t.trip_id
+          AND ss.stop_id = st.stop_id
           AND ss.next_schedule_stop_sequence IS NOT NULL
       WHERE
           c.$day = '1'
