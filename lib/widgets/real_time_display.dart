@@ -48,7 +48,7 @@ class _RealTimeDisplayState extends State<RealTimeDisplay> {
 
   bool _hasDataChanged(RealTimeDisplay oldWidget) {
     return oldWidget.secondsToArrival != widget.secondsToArrival ||
-           oldWidget.lastUpdated != widget.lastUpdated;
+        oldWidget.lastUpdated != widget.lastUpdated;
   }
 
   Future<void> _initializeSettings() async {
@@ -84,7 +84,7 @@ class _RealTimeDisplayState extends State<RealTimeDisplay> {
       widget.lastUpdated,
     );
     final shouldShow = remainingSeconds < _countdownThreshold;
-    
+
     if (shouldShow != _showCountdown) {
       _showCountdown = shouldShow;
       if (_showCountdown) {
@@ -125,8 +125,8 @@ class _RealTimeDisplayState extends State<RealTimeDisplay> {
         text,
         textAlign: TextAlign.center,
         style: Theme.of(context).textTheme.labelMedium?.copyWith(
-          color: textColor,
-        ),
+              color: textColor,
+            ),
       ),
     );
   }
@@ -134,7 +134,7 @@ class _RealTimeDisplayState extends State<RealTimeDisplay> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
