@@ -48,7 +48,7 @@ class ApiService {
           .toList();
 
       // Cache the alerts data
-      await StorageService.cacheAlerts(jsonData['data']);
+      await cacheAlerts(jsonData['data']);
       return incidents;
     } catch (e) {
       debugPrint('Error fetching alerts: $e');
@@ -66,9 +66,9 @@ class ApiService {
   static Future<Map<String, String>> _buildPathHeaders(
       [bool includeContentType = false]) async {
     return {
-      'AuthKey': await StorageService.getAuthKey(),
+      'AuthKey': await getSetting(Setting.authKey),
       'AppVersion': '6.1.0',
-      'DbChecksum': await StorageService.getDbChecksum(),
+      'DbChecksum': await getSetting(Setting.dbChecksum),
       if (includeContentType) 'Content-Type': 'application/json',
     };
   }
@@ -82,7 +82,7 @@ class ApiService {
   /// Fetches the latest DB checksum from server
   static Future<String?> fetchLatestDbChecksum() async {
     try {
-      final currentChecksum = await StorageService.getDbChecksum();
+      final currentChecksum = await getSetting(Setting.dbChecksum);
       final response = await http.get(
         Uri.parse(_configEndpoint),
         headers: await _buildPathHeaders(),
@@ -108,7 +108,7 @@ class ApiService {
         Uri.parse(_datafileEndpoint),
         headers: await _buildPathHeaders(true),
         body: json.encode({
-          'checksum': await StorageService.getDbChecksum(),
+          'checksum': await getSetting(Setting.dbChecksum),
           'type': 'database',
         }),
       );
@@ -147,7 +147,7 @@ class ApiService {
     try {
       final dbPath = await getDatabasePath();
       final dbExists = await File(dbPath).exists();
-      final shouldDownload = await StorageService.shouldDownloadDatabase();
+      final shouldDownload = await shouldDownloadDatabase();
 
       // Return existing path if database is fresh
       if (dbExists && !shouldDownload) {
@@ -162,7 +162,7 @@ class ApiService {
         return null;
       }
 
-      final currentChecksum = await StorageService.getDbChecksum();
+      final currentChecksum = await getSetting(Setting.dbChecksum);
       final needsUpdate =
           !dbExists || shouldDownload || latestChecksum != currentChecksum;
 
@@ -173,14 +173,14 @@ class ApiService {
 
       // Update checksum if changed
       if (latestChecksum != currentChecksum) {
-        await StorageService.setDbChecksum(latestChecksum);
+        await setSetting(Setting.dbChecksum, latestChecksum);
         debugPrint('Checksum updated: $currentChecksum -> $latestChecksum');
       }
 
       // Download database
       final downloadedPath = await downloadAndExtractDatabase();
       if (downloadedPath != null) {
-        await StorageService.setLastDbDownloadTime(DateTime.now());
+        await setSetting(Setting.lastDbDownload, DateTime.now());
         debugPrint('Database updated successfully');
       }
 

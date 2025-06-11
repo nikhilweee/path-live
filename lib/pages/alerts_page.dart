@@ -22,7 +22,7 @@ class _AlertsPageState extends State<AlertsPage> {
   }
 
   Future<void> _loadCachedAlerts() async {
-    final cachedAlerts = await StorageService.loadCachedAlerts();
+    final cachedAlerts = await getCachedAlerts();
     setState(() => _alerts = cachedAlerts);
     await _fetchAlerts(showLoading: true);
   }

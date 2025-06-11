@@ -52,7 +52,7 @@ class _RealTimeDisplayState extends State<RealTimeDisplay> {
   }
 
   Future<void> _initializeSettings() async {
-    _countdownThreshold = await StorageService.getCountdownThreshold();
+    _countdownThreshold = await getSetting(Setting.countdownThreshold);
     if (mounted) {
       setState(() {
         _updateCountdownVisibility();
@@ -61,7 +61,7 @@ class _RealTimeDisplayState extends State<RealTimeDisplay> {
   }
 
   Future<void> _checkSettingsUpdate() async {
-    final newThreshold = await StorageService.getCountdownThreshold();
+    final newThreshold = await getSetting(Setting.countdownThreshold);
     if (newThreshold != _countdownThreshold) {
       _countdownThreshold = newThreshold;
       if (mounted) {

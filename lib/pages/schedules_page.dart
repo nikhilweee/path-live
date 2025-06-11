@@ -69,8 +69,8 @@ class _SchedulesPageState extends State<SchedulesPage> {
   }
 
   Future<void> _loadSettings() async {
-    final previousCount = await StorageService.getPreviousTrainsCount();
-    final futureCount = await StorageService.getFutureTrainsCount();
+    final previousCount = await getSetting(Setting.previousTrainsCount);
+    final futureCount = await getSetting(Setting.futureTrainsCount);
     
     setState(() {
       _previousTrainsCount = previousCount;

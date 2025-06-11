@@ -52,10 +52,10 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _loadSettings() async {
     final values = await Future.wait([
-      StorageService.getProgressBarDuration(),
-      StorageService.getCountdownThreshold(),
-      StorageService.getPreviousTrainsCount(),
-      StorageService.getFutureTrainsCount(),
+      getSetting(Setting.progressBarDuration),
+      getSetting(Setting.countdownThreshold),
+      getSetting(Setting.previousTrainsCount),
+      getSetting(Setting.futureTrainsCount),
     ]);
 
     setState(() {
@@ -77,18 +77,18 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _saveSetting(String key, int value) async {
     switch (key) {
       case 'progressBarDuration':
-        await StorageService.setProgressBarDuration(value);
+        await setSetting(Setting.progressBarDuration, value);
       case 'previousTrainsCount':
-        await StorageService.setPreviousTrainsCount(value);
+        await setSetting(Setting.previousTrainsCount, value);
       case 'futureTrainsCount':
-        await StorageService.setFutureTrainsCount(value);
+        await setSetting(Setting.futureTrainsCount, value);
       case 'countdownThreshold':
-        await StorageService.setCountdownThreshold(value);
+        await setSetting(Setting.countdownThreshold, value);
     }
   }
 
   Future<void> _resetSettings() async {
-    await StorageService.resetTrainDisplaySettings();
+    await resetAllTrainSettings();
     await _loadSettings();
 
     if (mounted) {

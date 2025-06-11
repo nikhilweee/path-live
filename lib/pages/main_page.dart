@@ -74,17 +74,17 @@ class _MainPageState extends State<MainPage> {
   }
 
   Future<void> _loadFilters() async {
-    final filters = await StorageService.loadFilters();
+    final filters = await getSetting(Setting.filters);
     setState(() => _filters = filters);
   }
 
   Future<void> _loadProgressBarDuration() async {
-    final duration = await StorageService.getProgressBarDuration();
+    final duration = await getSetting(Setting.progressBarDuration);
     setState(() => _progressBarDuration = duration);
   }
 
   Future<void> _saveFilters() async {
-    await StorageService.saveFilters(_filters);
+    await setSetting(Setting.filters, _filters);
   }
 
   void _toggleFilter(String station) {
