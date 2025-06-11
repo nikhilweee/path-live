@@ -97,19 +97,23 @@ class _MainPageState extends State<MainPage> {
   }
 
   Widget _buildFilterChips() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: LocationService.stationCoordinates.keys
-            .map((station) => Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  child: FilterChip(
-                    label: Text(station),
-                    selected: _filters.contains(station),
-                    onSelected: (_) => _toggleFilter(station),
-                  ),
-                ))
-            .toList(),
+    return OverflowBox(
+      maxHeight: 50,
+      alignment: Alignment.bottomCenter,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: LocationService.stationCoordinates.keys
+              .map((station) => Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: FilterChip(
+                      label: Text(station),
+                      selected: _filters.contains(station),
+                      onSelected: (_) => _toggleFilter(station),
+                    ),
+                  ))
+              .toList(),
+        ),
       ),
     );
   }
@@ -179,11 +183,11 @@ class _MainPageState extends State<MainPage> {
               onCompleted: _fetchStations,
             ),
             AnimatedContainer(
-              color: Theme.of(context).colorScheme.surface,
+              color: Theme.of(context).colorScheme.surfaceContainerLow,
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
-              // TODO: Fix Animation
-              height: _isFabVisible ? 50 : 50,
+              height: _isFabVisible ? 50 : 0,
+              clipBehavior: Clip.hardEdge,
               child: _buildFilterChips(),
             ),
             Expanded(

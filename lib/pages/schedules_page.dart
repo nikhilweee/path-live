@@ -51,8 +51,10 @@ class _SchedulesPageState extends State<SchedulesPage> {
       }
     }
 
-    pastTrains.sort((a, b) => b.departureTime.compareTo(a.departureTime));
-    final limitedPastTrains = pastTrains.take(_previousTrainsCount).toList();
+    pastTrains.sort((a, b) => a.departureTime.compareTo(b.departureTime));
+    final limitedPastTrains = pastTrains.length > _previousTrainsCount
+        ? pastTrains.sublist(pastTrains.length - _previousTrainsCount)
+        : pastTrains;
 
     futureTrains.sort((a, b) => a.departureTime.compareTo(b.departureTime));
     final limitedFutureTrains = futureTrains.take(_futureTrainsCount).toList();
@@ -71,7 +73,7 @@ class _SchedulesPageState extends State<SchedulesPage> {
   Future<void> _loadSettings() async {
     final previousCount = await getSetting(Setting.previousTrainsCount);
     final futureCount = await getSetting(Setting.futureTrainsCount);
-    
+
     setState(() {
       _previousTrainsCount = previousCount;
       _futureTrainsCount = futureCount;
@@ -163,21 +165,25 @@ class _SchedulesPageState extends State<SchedulesPage> {
 
     if (uniqueRoutes.isEmpty) return const SizedBox.shrink();
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: uniqueRoutes
-            .map(
-              (route) => Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                child: FilterChip(
-                  label: Text(route),
-                  selected: _selectedRoutes.contains(route),
-                  onSelected: (_) => _toggleRouteFilter(route),
+    return OverflowBox(
+      maxHeight: 50,
+      alignment: Alignment.bottomCenter,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: uniqueRoutes
+              .map(
+                (route) => Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  child: FilterChip(
+                    label: Text(route),
+                    selected: _selectedRoutes.contains(route),
+                    onSelected: (_) => _toggleRouteFilter(route),
+                  ),
                 ),
-              ),
-            )
-            .toList(),
+              )
+              .toList(),
+        ),
       ),
     );
   }
@@ -200,16 +206,17 @@ class _SchedulesPageState extends State<SchedulesPage> {
         onRefresh: _updateDatabase,
         child: Column(
           children: [
-            SizedBox(
+            Container(
               height: 4,
+              color: Theme.of(context).colorScheme.surfaceContainer,
               child: _isLoading ? const LinearProgressIndicator() : null,
             ),
             AnimatedContainer(
-              color: Theme.of(context).colorScheme.surface,
+              color: Theme.of(context).colorScheme.surfaceContainerLow,
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
-              // TODO: Fix Animation
-              height: _isFilterVisible ? 50 : 50,
+              height: _isFilterVisible ? 50 : 0,
+              clipBehavior: Clip.hardEdge,
               child: _buildFilterChips(),
             ),
             if (_statusMessage != null)
