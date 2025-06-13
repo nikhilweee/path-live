@@ -169,7 +169,8 @@ class TrainSchedule {
     required this.date,
   });
 
-  factory TrainSchedule.fromMap(Map<String, dynamic> map, {required DateTime date}) {
+  factory TrainSchedule.fromMap(Map<String, dynamic> map,
+      {required DateTime date}) {
     return TrainSchedule(
       departureTime: map['departure_time'] as String,
       tripHeadsign: map['trip_headsign'] as String,

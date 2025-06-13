@@ -9,7 +9,7 @@ class DatabaseService {
   static String _getDayColumn(tz.TZDateTime dateTime) {
     const days = [
       'monday',
-      'tuesday', 
+      'tuesday',
       'wednesday',
       'thursday',
       'friday',
@@ -19,7 +19,8 @@ class DatabaseService {
     return days[dateTime.weekday - 1];
   }
 
-  static Future<List<TrainSchedule>> getTrainsForDay(String stopName, tz.TZDateTime date) async {
+  static Future<List<TrainSchedule>> getTrainsForDay(
+      String stopName, tz.TZDateTime date) async {
     final dbPath = await ApiService.getDatabasePath();
     if (!File(dbPath).existsSync()) {
       throw Exception('Database file not found: $dbPath');
@@ -31,7 +32,7 @@ class DatabaseService {
       final dayColumn = _getDayColumn(date);
 
       print("running db query for $dayColumn at $stopName");
-      
+
       final results = await db.rawQuery('''
         SELECT
             r.route_color,
@@ -62,10 +63,12 @@ class DatabaseService {
       ''', [stopName]);
 
       print("found ${results.length} results");
-      
+
       // Convert the date to a simple DateTime for the date field
       final dateOnly = DateTime(date.year, date.month, date.day);
-      return results.map((row) => TrainSchedule.fromMap(row, date: dateOnly)).toList();
+      return results
+          .map((row) => TrainSchedule.fromMap(row, date: dateOnly))
+          .toList();
     } finally {
       await db.close();
     }
