@@ -28,20 +28,6 @@ class _SettingsPageState extends State<SettingsPage> {
       'options': [0, 300, 900],
       'labels': ['Never', '5min', '15min'],
     },
-    {
-      'key': 'previousTrainsCount',
-      'title': 'Previous trains',
-      'subtitle': 'Past trains to show',
-      'options': [0, 5, 15],
-      'labels': ['None', '5', '15'],
-    },
-    {
-      'key': 'futureTrainsCount',
-      'title': 'Future trains',
-      'subtitle': 'Upcoming trains to show',
-      'options': [10, 25, 50],
-      'labels': ['10', '25', '50'],
-    },
   ];
 
   @override
@@ -54,15 +40,11 @@ class _SettingsPageState extends State<SettingsPage> {
     final values = await Future.wait([
       getSetting(Setting.progressBarDuration),
       getSetting(Setting.countdownThreshold),
-      getSetting(Setting.previousTrainsCount),
-      getSetting(Setting.futureTrainsCount),
     ]);
 
     setState(() {
       _settings['progressBarDuration'] = values[0];
       _settings['countdownThreshold'] = values[1];
-      _settings['previousTrainsCount'] = values[2];
-      _settings['futureTrainsCount'] = values[3];
       _isLoading = false;
     });
   }
@@ -78,10 +60,6 @@ class _SettingsPageState extends State<SettingsPage> {
     switch (key) {
       case 'progressBarDuration':
         await setSetting(Setting.progressBarDuration, value);
-      case 'previousTrainsCount':
-        await setSetting(Setting.previousTrainsCount, value);
-      case 'futureTrainsCount':
-        await setSetting(Setting.futureTrainsCount, value);
       case 'countdownThreshold':
         await setSetting(Setting.countdownThreshold, value);
     }

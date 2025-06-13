@@ -22,8 +22,6 @@ enum Setting<T> {
   lastDbDownload<DateTime?>('last_db_download', null, StorageType.dateTime),
 
   // Train display settings
-  previousTrainsCount<int>('previous_trains_count', 5, StorageType.integer),
-  futureTrainsCount<int>('future_trains_count', 25, StorageType.integer),
   progressBarDuration<int>('progress_bar_duration', 30, StorageType.integer),
   countdownThreshold<int>('countdown_threshold', 300, StorageType.integer),
 
@@ -108,10 +106,6 @@ Future<void> setSetting<T>(Setting<T> setting, T value) async {
 // Utility functions for common operations
 Future<void> resetAllTrainSettings() async {
   await Future.wait([
-    setSetting(
-        Setting.previousTrainsCount, Setting.previousTrainsCount.defaultValue),
-    setSetting(
-        Setting.futureTrainsCount, Setting.futureTrainsCount.defaultValue),
     setSetting(
         Setting.progressBarDuration, Setting.progressBarDuration.defaultValue),
     setSetting(
