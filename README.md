@@ -35,3 +35,9 @@ Update app icons after editing `pubspec.yaml` with the correct paths
 ```
 dart run flutter_launcher_icons
 ```
+
+Create a signed app bundle for distribution
+
+```
+flutter build appbundle --build-number N
+```

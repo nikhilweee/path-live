@@ -151,3 +151,32 @@ class Incident {
     return '${date.month}/${date.day} $hour:$minute';
   }
 }
+
+class TrainSchedule {
+  final String departureTime;
+  final String tripHeadsign;
+  final String routeNameShort;
+  final String routeColor;
+  final String? routeSecondaryRouteColor;
+  final DateTime date;
+
+  TrainSchedule({
+    required this.departureTime,
+    required this.tripHeadsign,
+    required this.routeNameShort,
+    required this.routeColor,
+    this.routeSecondaryRouteColor,
+    required this.date,
+  });
+
+  factory TrainSchedule.fromMap(Map<String, dynamic> map, {required DateTime date}) {
+    return TrainSchedule(
+      departureTime: map['departure_time'] as String,
+      tripHeadsign: map['trip_headsign'] as String,
+      routeNameShort: map['route_name_short'] as String,
+      routeColor: map['route_color'] as String,
+      routeSecondaryRouteColor: map['route_secondary_route_color'] as String?,
+      date: date,
+    );
+  }
+}
