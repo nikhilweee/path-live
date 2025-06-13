@@ -39,5 +39,5 @@ dart run flutter_launcher_icons
 Create a signed app bundle for distribution
 
 ```
-flutter build appbundle --build-number N
+flutter build appbundle --build-number 3
 ```
