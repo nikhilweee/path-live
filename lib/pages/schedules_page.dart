@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import '../models/models.dart';
-import '../services/api_service.dart';
-import '../services/database_service.dart';
-import '../services/storage_service.dart';
-import '../utils/time_utils.dart';
+import '../services/schedule_service.dart';
 import '../widgets/schedule_card.dart';
 
 class SchedulesPage extends StatefulWidget {
@@ -22,62 +19,16 @@ class SchedulesPage extends StatefulWidget {
 class _SchedulesPageState extends State<SchedulesPage> {
   final ScrollController _scrollController = ScrollController();
 
-  bool _isLoading = false;
-  String? _statusMessage;
   List<TrainSchedule> _allTrains = [];
-  Set<String> _selectedRoutes = {};
+  List<String> _filters = [];
+  bool _isLoading = true;
   bool _isFilterVisible = true;
-  int _previousTrainsCount = 5;
-  int _futureTrainsCount = 20;
-
-  List<TrainSchedule> get _filteredTrains {
-    if (_selectedRoutes.isEmpty) return _allTrains;
-    return _allTrains
-        .where((train) => _selectedRoutes.contains(train.routeNameShort))
-        .toList();
-  }
-
-  (List<TrainSchedule>, List<TrainSchedule>) get _splitTrains {
-    final currentTimeString = TimeUtils.getCurrentTimeString();
-
-    final pastTrains = <TrainSchedule>[];
-    final futureTrains = <TrainSchedule>[];
-
-    for (final train in _filteredTrains) {
-      if (train.departureTime.compareTo(currentTimeString) <= 0) {
-        pastTrains.add(train);
-      } else {
-        futureTrains.add(train);
-      }
-    }
-
-    pastTrains.sort((a, b) => a.departureTime.compareTo(b.departureTime));
-    final limitedPastTrains = pastTrains.length > _previousTrainsCount
-        ? pastTrains.sublist(pastTrains.length - _previousTrainsCount)
-        : pastTrains;
-
-    futureTrains.sort((a, b) => a.departureTime.compareTo(b.departureTime));
-    final limitedFutureTrains = futureTrains.take(_futureTrainsCount).toList();
-
-    return (limitedPastTrains, limitedFutureTrains);
-  }
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    _loadSettings();
-    _updateDatabase();
-  }
-
-  Future<void> _loadSettings() async {
-    final previousCount = await getSetting(Setting.previousTrainsCount);
-    final futureCount = await getSetting(Setting.futureTrainsCount);
-
-    setState(() {
-      _previousTrainsCount = previousCount;
-      _futureTrainsCount = futureCount;
-    });
+    _loadTrains();
   }
 
   void _onScroll() {
@@ -89,81 +40,20 @@ class _SchedulesPageState extends State<SchedulesPage> {
     }
   }
 
-  void _updateState({
-    bool? isLoading,
-    String? statusMessage,
-    List<TrainSchedule>? allTrains,
-  }) {
-    if (mounted) {
-      setState(() {
-        if (isLoading != null) _isLoading = isLoading;
-        if (statusMessage != null) _statusMessage = statusMessage;
-        if (allTrains != null) _allTrains = allTrains;
-      });
-    }
-  }
-
-  Future<void> _updateDatabase() async {
-    _updateState(isLoading: true, statusMessage: null);
-
-    // Reload settings in case they changed
-    await _loadSettings();
-
-    try {
-      final dbPath = await ApiService.updatePathDatabase();
-      if (dbPath != null) {
-        await _loadUpcomingTrains();
-      } else {
-        _updateState(
-            isLoading: false, statusMessage: 'Failed to update database');
-      }
-    } catch (e) {
-      _updateState(
-          isLoading: false, statusMessage: 'Failed to update database: $e');
-    }
-  }
-
-  Future<void> _loadUpcomingTrains() async {
-    try {
-      final trains = await DatabaseService.getUpcomingTrains(
-        widget.station.consideredStationFullName,
-      );
-      _updateState(isLoading: false, allTrains: trains);
-    } catch (e) {
-      _updateState(
-          isLoading: false,
-          statusMessage: 'Failed to load train schedules: $e');
-    }
-  }
-
-  List<Widget> _buildTrainList() {
-    final (pastTrains, futureTrains) = _splitTrains;
-    final widgets = <Widget>[];
-
-    // Add past trains
-    widgets.addAll(
-        pastTrains.map((train) => ScheduleCard(schedule: train, isPast: true)));
-
-    // Add future trains
-    widgets.addAll(futureTrains
-        .map((train) => ScheduleCard(schedule: train, isPast: false)));
-
-    return widgets;
-  }
-
-  void _toggleRouteFilter(String route) {
+  void _toggleFilter(String routeName) {
     setState(() {
-      _selectedRoutes.contains(route)
-          ? _selectedRoutes.remove(route)
-          : _selectedRoutes.add(route);
+      _filters.contains(routeName)
+          ? _filters.remove(routeName)
+          : _filters.add(routeName);
     });
   }
 
   Widget _buildFilterChips() {
-    final uniqueRoutes =
-        _allTrains.map((train) => train.routeNameShort).toSet().toList();
-
-    if (uniqueRoutes.isEmpty) return const SizedBox.shrink();
+    final uniqueRoutes = _allTrains
+        .map((train) => train.routeNameShort)
+        .toSet()
+        .toList()
+      ..sort();
 
     return OverflowBox(
       maxHeight: 50,
@@ -172,20 +62,41 @@ class _SchedulesPageState extends State<SchedulesPage> {
         scrollDirection: Axis.horizontal,
         child: Row(
           children: uniqueRoutes
-              .map(
-                (route) => Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  child: FilterChip(
-                    label: Text(route),
-                    selected: _selectedRoutes.contains(route),
-                    onSelected: (_) => _toggleRouteFilter(route),
-                  ),
-                ),
-              )
+              .map((route) => Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: FilterChip(
+                      label: Text(route),
+                      selected: _filters.contains(route),
+                      onSelected: (_) => _toggleFilter(route),
+                    ),
+                  ))
               .toList(),
         ),
       ),
     );
+  }
+
+  Future<void> _loadTrains() async {
+    final now = DateTime.now();
+    final yesterday = now.subtract(const Duration(days: 1));
+    final today = now;
+    final tomorrow = now.add(const Duration(days: 1));
+
+    final trains = <TrainSchedule>[];
+    trains.addAll(await ScheduleService.getTrainsForDate(
+        widget.station.consideredStationFullName, yesterday));
+    trains.addAll(await ScheduleService.getTrainsForDate(
+        widget.station.consideredStationFullName, today));
+    trains.addAll(await ScheduleService.getTrainsForDate(
+        widget.station.consideredStationFullName, tomorrow));
+
+    // Sort all trains by datetime
+    trains.sort((a, b) => a.departureDateTime.compareTo(b.departureDateTime));
+
+    setState(() {
+      _allTrains = trains;
+      _isLoading = false;
+    });
   }
 
   @override
@@ -197,57 +108,82 @@ class _SchedulesPageState extends State<SchedulesPage> {
 
   @override
   Widget build(BuildContext context) {
+    final filteredTrains = _filters.isEmpty
+        ? _allTrains
+        : _allTrains
+            .where((train) => _filters.contains(train.routeNameShort))
+            .toList();
+
+    // Recalculate center index for filtered trains
+    int filteredCenterIndex = 0;
+    for (int i = 0; i < filteredTrains.length; i++) {
+      if (!ScheduleService.isTrainInPast(filteredTrains[i])) {
+        filteredCenterIndex = i;
+        break;
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.station.consideredStationFullName),
+        title: Text(
+          widget.station.consideredStationFullName,
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
         forceMaterialTransparency: true,
       ),
-      body: RefreshIndicator(
-        onRefresh: _updateDatabase,
-        child: Column(
-          children: [
-            Container(
-              height: 4,
-              color: Theme.of(context).colorScheme.surfaceContainer,
-              child: _isLoading ? const LinearProgressIndicator() : null,
-            ),
-            AnimatedContainer(
-              color: Theme.of(context).colorScheme.surfaceContainerLow,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              height: _isFilterVisible ? 50 : 0,
-              clipBehavior: Clip.hardEdge,
-              child: _buildFilterChips(),
-            ),
-            if (_statusMessage != null)
-              Expanded(
-                child: Center(
-                  child: Text(
-                    _statusMessage!,
-                    style: const TextStyle(fontSize: 16),
-                    textAlign: TextAlign.center,
+      body: Column(
+        children: [
+          Container(
+            height: 4,
+            color: Theme.of(context).colorScheme.surfaceContainer,
+            child: _isLoading ? const LinearProgressIndicator() : null,
+          ),
+          AnimatedContainer(
+            color: Theme.of(context).colorScheme.surfaceContainerLow,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            height: _isFilterVisible ? 50 : 0,
+            clipBehavior: Clip.hardEdge,
+            child: _buildFilterChips(),
+          ),
+          Expanded(
+            child: CustomScrollView(
+              controller: _scrollController,
+              center: ValueKey(filteredCenterIndex),
+              slivers: [
+                // Past trains (in reverse order)
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final reverseIndex = filteredCenterIndex - 1 - index;
+                      if (reverseIndex < 0) return null;
+                      return ScheduleCard(
+                        schedule: filteredTrains[reverseIndex],
+                        isPast: true,
+                      );
+                    },
+                    childCount: filteredCenterIndex,
                   ),
                 ),
-              )
-            else if (_filteredTrains.isNotEmpty)
-              Expanded(
-                child: ListView(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  children: _buildTrainList(),
-                ),
-              )
-            else if (!_isLoading)
-              const Expanded(
-                child: Center(
-                  child: Text(
-                    'No upcoming trains found',
-                    style: TextStyle(fontSize: 16),
+                // Future trains
+                SliverList(
+                  key: ValueKey(filteredCenterIndex),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final actualIndex = filteredCenterIndex + index;
+                      if (actualIndex >= filteredTrains.length) return null;
+                      return ScheduleCard(
+                        schedule: filteredTrains[actualIndex],
+                        isPast: false,
+                      );
+                    },
+                    childCount: filteredTrains.length - filteredCenterIndex,
                   ),
                 ),
-              ),
-          ],
-        ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

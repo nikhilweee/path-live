@@ -158,7 +158,7 @@ class TrainSchedule {
   final String routeNameShort;
   final String routeColor;
   final String? routeSecondaryRouteColor;
-  final DateTime date;
+  final DateTime departureDate;
 
   TrainSchedule({
     required this.departureTime,
@@ -166,8 +166,24 @@ class TrainSchedule {
     required this.routeNameShort,
     required this.routeColor,
     this.routeSecondaryRouteColor,
-    required this.date,
+    required this.departureDate,
   });
+
+  DateTime get departureDateTime {
+    final timeParts = departureTime.split(':');
+    final hour = int.parse(timeParts[0]);
+    final minute = int.parse(timeParts[1]);
+    final second = timeParts.length > 2 ? int.parse(timeParts[2]) : 0;
+
+    return DateTime(
+      departureDate.year,
+      departureDate.month,
+      departureDate.day,
+      hour,
+      minute,
+      second,
+    );
+  }
 
   factory TrainSchedule.fromMap(Map<String, dynamic> map,
       {required DateTime date}) {
@@ -177,7 +193,7 @@ class TrainSchedule {
       routeNameShort: map['route_name_short'] as String,
       routeColor: map['route_color'] as String,
       routeSecondaryRouteColor: map['route_secondary_route_color'] as String?,
-      date: date,
+      departureDate: date,
     );
   }
 }

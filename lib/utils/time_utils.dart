@@ -8,6 +8,13 @@ class TimeUtils {
     return timeString;
   }
 
+  /// Formats date in "MM/DD" format
+  static String formatDate(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '$month/$day';
+  }
+
   /// Gets current time in "HH:MM:SS" format
   static String getCurrentTimeString() {
     final now = DateTime.now();

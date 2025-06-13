@@ -1,6 +1,7 @@
 # General Instructions
 
 - When generating code, prefer responses that are simple, cohesive and lean.
+- Adhere to the Don't Repeat Yourself (DRY) principle
 - Feel free to do a flutter analyze when required.
 - Do NOT run flutter build apk after every task.
 - Do NOT attempt to do a hot reload after every task.

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/database_service.dart';
 import '../utils/time_utils.dart';
+import '../models/models.dart';
 import 'color_circle.dart';
 
 class ScheduleCard extends StatelessWidget {
@@ -48,14 +48,27 @@ class ScheduleCard extends StatelessWidget {
             ),
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
             margin: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Text(
-              TimeUtils.formatTime(schedule.departureTime),
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: isPast
-                        ? Theme.of(context).colorScheme.onError
-                        : Theme.of(context).colorScheme.onPrimary,
-                  ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  TimeUtils.formatDate(schedule.departureDate),
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: isPast
+                            ? Theme.of(context).colorScheme.onError
+                            : Theme.of(context).colorScheme.onPrimary,
+                      ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  TimeUtils.formatTime(schedule.departureTime),
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: isPast
+                            ? Theme.of(context).colorScheme.onError
+                            : Theme.of(context).colorScheme.onPrimary,
+                      ),
+                ),
+              ],
             ),
           ),
         ],
