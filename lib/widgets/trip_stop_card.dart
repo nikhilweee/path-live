@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 import '../utils/time_utils.dart';
 import '../models/models.dart';
 import 'color_circle.dart';
+import 'badge_widget.dart';
 
 class TripStopCard extends StatelessWidget {
   final TripStop tripStop;
-  final bool isPast;
 
   const TripStopCard({
     super.key,
     required this.tripStop,
-    this.isPast = false,
   });
 
   @override
@@ -31,33 +30,13 @@ class TripStopCard extends StatelessWidget {
           Expanded(
             child: Text(
               tripStop.stopName,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: isPast
-                        ? Theme.of(context).colorScheme.onSurfaceVariant
-                        : Theme.of(context).colorScheme.onSurface,
-                  ),
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
           ),
-          Container(
-            decoration: BoxDecoration(
-              color: isPast
-                  ? Theme.of(context).colorScheme.error
-                  : Theme.of(context).colorScheme.primary,
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            constraints: const BoxConstraints(
-              minWidth: 40,
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-            margin: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Text(
-              TimeUtils.formatTime(tripStop.departureTime),
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: isPast
-                        ? Theme.of(context).colorScheme.onError
-                        : Theme.of(context).colorScheme.onPrimary,
-                  ),
-            ),
+          BadgeWidget(
+            text: TimeUtils.formatTime(tripStop.departureTime),
+            backgroundColor: Theme.of(context).colorScheme.secondary,
+            textColor: Theme.of(context).colorScheme.onSecondary,
           ),
         ],
       ),

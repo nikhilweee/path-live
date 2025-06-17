@@ -3,6 +3,7 @@ import '../utils/time_utils.dart';
 import '../models/models.dart';
 import '../pages/trip_details_page.dart';
 import 'color_circle.dart';
+import 'badge_widget.dart';
 
 class ScheduleCard extends StatelessWidget {
   final TrainSchedule schedule;
@@ -28,7 +29,10 @@ class ScheduleCard extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => TripDetailsPage(tripId: schedule.tripId),
+              builder: (context) => TripDetailsPage(
+                tripId: schedule.tripId,
+                tripHeadsign: schedule.tripHeadsign,
+              ),
             ),
           );
         },
@@ -46,41 +50,28 @@ class ScheduleCard extends StatelessWidget {
                 ],
               ),
             ),
-            Container(
-              decoration: BoxDecoration(
-                color: isPast
-                    ? Theme.of(context).colorScheme.error
-                    : Theme.of(context).colorScheme.primary,
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              constraints: const BoxConstraints(
-                minWidth: 60,
-              ),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-              margin: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    TimeUtils.formatDate(schedule.departureDate),
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: isPast
-                              ? Theme.of(context).colorScheme.onError
-                              : Theme.of(context).colorScheme.onPrimary,
-                        ),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    TimeUtils.formatTime(schedule.departureTime),
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: isPast
-                              ? Theme.of(context).colorScheme.onError
-                              : Theme.of(context).colorScheme.onPrimary,
-                        ),
-                  ),
-                ],
-              ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                BadgeWidget(
+                  text: TimeUtils.formatDate(schedule.departureDate),
+                  backgroundColor: isPast
+                      ? Theme.of(context).colorScheme.error
+                      : Theme.of(context).colorScheme.primary,
+                  textColor: isPast
+                      ? Theme.of(context).colorScheme.onError
+                      : Theme.of(context).colorScheme.onPrimary,
+                ),
+                BadgeWidget(
+                  text: TimeUtils.formatTime(schedule.departureTime),
+                  backgroundColor: isPast
+                      ? Theme.of(context).colorScheme.error
+                      : Theme.of(context).colorScheme.primary,
+                  textColor: isPast
+                      ? Theme.of(context).colorScheme.onError
+                      : Theme.of(context).colorScheme.onPrimary,
+                ),
+              ],
             ),
           ],
         ),

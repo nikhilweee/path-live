@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../utils/time_utils.dart';
 import '../services/storage_service.dart';
+import 'badge_widget.dart';
 
 class RealTimeDisplay extends StatefulWidget {
   final String secondsToArrival;
@@ -107,30 +108,6 @@ class _RealTimeDisplayState extends State<RealTimeDisplay> {
     _countdownTimer = null;
   }
 
-  Widget _buildBadge({
-    required String text,
-    required Color backgroundColor,
-    required Color textColor,
-    double marginLeft = 0,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      constraints: const BoxConstraints(minWidth: 40),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      margin: EdgeInsets.only(left: marginLeft),
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: textColor,
-            ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -139,7 +116,7 @@ class _RealTimeDisplayState extends State<RealTimeDisplay> {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (_showCountdown)
-          _buildBadge(
+          BadgeWidget(
             text: TimeUtils.formatSecondsToArrival(
               widget.secondsToArrival,
               widget.lastUpdated,
@@ -147,11 +124,10 @@ class _RealTimeDisplayState extends State<RealTimeDisplay> {
             backgroundColor: colorScheme.error,
             textColor: colorScheme.onError,
           ),
-        _buildBadge(
+        BadgeWidget(
           text: widget.arrivalTimeMessage,
           backgroundColor: colorScheme.primary,
           textColor: colorScheme.onPrimary,
-          marginLeft: _showCountdown ? 4 : 0,
         ),
       ],
     );

@@ -5,10 +5,12 @@ import '../widgets/trip_stop_card.dart';
 
 class TripDetailsPage extends StatefulWidget {
   final String tripId;
+  final String tripHeadsign;
 
   const TripDetailsPage({
     super.key,
     required this.tripId,
+    required this.tripHeadsign,
   });
 
   @override
@@ -49,7 +51,7 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Trip Details',
+          widget.tripHeadsign,
           style: Theme.of(context).textTheme.titleLarge,
         ),
         forceMaterialTransparency: true,
@@ -73,7 +75,6 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
                         itemBuilder: (context, index) {
                           return TripStopCard(
                             tripStop: _tripStops[index],
-                            isPast: false, // TODO: Implement logic to determine if stop is in the past
                           );
                         },
                       ),

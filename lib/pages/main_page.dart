@@ -172,41 +172,52 @@ class _MainPageState extends State<MainPage> {
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: _fetchStations,
-        child: Column(
-          children: [
-            ProgressBar(
-              duration: Duration(seconds: _progressBarDuration),
-              color: Theme.of(context).colorScheme.primary,
-              backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
-              onCompleted: _fetchStations,
-            ),
-            AnimatedContainer(
-              color: Theme.of(context).colorScheme.surfaceContainerLow,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              height: _isFabVisible ? 50 : 0,
-              clipBehavior: Clip.hardEdge,
-              child: _buildFilterChips(),
-            ),
-            Expanded(
-              child: filteredStations.isEmpty
-                  ? const Center(child: Text('Failed to load data'))
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      controller: _scrollController,
-                      itemCount: filteredStations.length,
-                      itemBuilder: (context, index) => StationWidget(
+      body: Column(
+        children: [
+          ProgressBar(
+            duration: Duration(seconds: _progressBarDuration),
+            color: Theme.of(context).colorScheme.primary,
+            backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+            onCompleted: _fetchStations,
+          ),
+          AnimatedContainer(
+            color: Theme.of(context).colorScheme.surfaceContainerLow,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            height: _isFabVisible ? 50 : 0,
+            clipBehavior: Clip.hardEdge,
+            child: _buildFilterChips(),
+          ),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _fetchStations,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return ListView.builder(
+                    controller: _scrollController,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    itemCount: filteredStations.isEmpty ? 1 : filteredStations.length,
+                    itemBuilder: (context, index) {
+                      if (filteredStations.isEmpty) {
+                        return SizedBox(
+                          height: constraints.maxHeight,
+                          child: const Center(child: Text('Failed to load data')),
+                        );
+                      }
+                      return StationWidget(
                         key: ValueKey(
                           'station_${filteredStations[index].consideredStation}',
                         ),
                         station: filteredStations[index],
-                      ),
-                    ),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
       floatingActionButton: AnimatedSlide(
         duration: const Duration(milliseconds: 300),
