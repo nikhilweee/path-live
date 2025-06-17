@@ -153,6 +153,7 @@ class Incident {
 }
 
 class TrainSchedule {
+  final String tripId;
   final String departureTime;
   final String tripHeadsign;
   final String routeNameShort;
@@ -161,6 +162,7 @@ class TrainSchedule {
   final DateTime departureDate;
 
   TrainSchedule({
+    required this.tripId,
     required this.departureTime,
     required this.tripHeadsign,
     required this.routeNameShort,
@@ -188,12 +190,39 @@ class TrainSchedule {
   factory TrainSchedule.fromMap(Map<String, dynamic> map,
       {required DateTime date}) {
     return TrainSchedule(
+      tripId: map['trip_id'] as String,
       departureTime: map['departure_time'] as String,
       tripHeadsign: map['trip_headsign'] as String,
       routeNameShort: map['route_name_short'] as String,
       routeColor: map['route_color'] as String,
       routeSecondaryRouteColor: map['route_secondary_route_color'] as String?,
       departureDate: date,
+    );
+  }
+}
+
+class TripStop {
+  final String stopName;
+  final String departureTime;
+  final int stopSequence;
+  final String routeColor;
+  final String? routeSecondaryRouteColor;
+
+  TripStop({
+    required this.stopName,
+    required this.departureTime,
+    required this.stopSequence,
+    required this.routeColor,
+    this.routeSecondaryRouteColor,
+  });
+
+  factory TripStop.fromMap(Map<String, dynamic> map) {
+    return TripStop(
+      stopName: map['stop_name'] as String,
+      departureTime: map['departure_time'] as String,
+      stopSequence: int.parse(map['stop_sequence'].toString()),
+      routeColor: map['route_color'] as String,
+      routeSecondaryRouteColor: map['route_secondary_route_color'] as String?,
     );
   }
 }

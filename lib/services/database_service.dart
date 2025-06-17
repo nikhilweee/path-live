@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -23,9 +22,14 @@ class DatabaseService {
   static Future<List<String>> _getActiveServiceIds(
       Database db, String dayColumn) async {
     final serviceResults = await db.rawQuery('''
-      SELECT service_id
-      FROM [gtfs.base.vw_calendar_active_services]
-      WHERE $dayColumn = '1'
+      SELECT
+          service_id
+      FROM
+          [gtfs.base.vw_calendar_active_services]
+      WHERE
+          $dayColumn = '1'
+          AND start_date <= strftime('%Y%m%d', 'now')
+          AND end_date >= strftime('%Y%m%d', 'now')
     ''');
 
     if (serviceResults.isEmpty) {
@@ -49,10 +53,11 @@ class DatabaseService {
 
     return await db.rawQuery('''
       SELECT
+          t.trip_id,
           r.route_color,
           raf.route_secondary_route_color,
           st.departure_time,
-          t.trip_headsign,
+          hs.trip_destination as trip_headsign,
           hs.trip_destination_abbreviation as route_name_short
       FROM
           [gtfs.base.trips] t
@@ -77,9 +82,9 @@ class DatabaseService {
 
   static Future<List<TrainSchedule>> getTrainsForDay(
       String stopName, tz.TZDateTime date) async {
-    final dbPath = await ApiService.getDatabasePath();
-    if (!File(dbPath).existsSync()) {
-      throw Exception('Database file not found: $dbPath');
+    final dbPath = await ApiService.updatePathDatabase();
+    if (dbPath == null) {
+      throw Exception('Failed to initialize database.');
     }
 
     final db = await openDatabase(dbPath, readOnly: true);
@@ -105,6 +110,44 @@ class DatabaseService {
       return results
           .map((row) => TrainSchedule.fromMap(row, date: dateOnly))
           .toList();
+    } finally {
+      await db.close();
+    }
+  }
+
+  static Future<List<TripStop>> getTripStops(String tripId) async {
+    final dbPath = await ApiService.updatePathDatabase();
+    if (dbPath == null) {
+      throw Exception('Failed to initialize database.');
+    }
+
+    final db = await openDatabase(dbPath, readOnly: true);
+    try {
+      debugPrint("running db query for trip_id: $tripId");
+
+      final results = await db.rawQuery('''
+        SELECT
+            s.stop_name,
+            r.route_color,
+            raf.route_secondary_route_color,
+            st.departure_time,
+            st.stop_sequence
+        FROM
+            [gtfs.base.trips] t
+            JOIN [gtfs.base.stop_times] st ON t.trip_id = st.trip_id
+            JOIN [gtfs.base.stops] s ON s.stop_id = st.stop_id
+            -- Join with additional tables for route colors
+            JOIN [gtfs.base.routes] r ON r.route_id = t.route_id
+            JOIN [gtfs.master.routes_additional_info] raf ON raf.route_id = r.route_id
+        WHERE
+            st.trip_id = ?
+        ORDER BY
+            CAST(st.stop_sequence AS INTEGER)
+      ''', [tripId]);
+
+      debugPrint("found ${results.length} stops for trip $tripId");
+
+      return results.map((row) => TripStop.fromMap(row)).toList();
     } finally {
       await db.close();
     }
