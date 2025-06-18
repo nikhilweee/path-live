@@ -8,10 +8,19 @@ import 'package:path_provider/path_provider.dart';
 import '../models/models.dart';
 import 'storage_service.dart';
 
+// Global alert notifier for UI updates
+final alertNotifier = ValueNotifier<bool>(false);
+
 class ApiService {
   static const String _baseUrl = 'https://www.panynj.gov/bin/portauthority';
   static const String _stationsEndpoint = '$_baseUrl/ridepath.json';
   static const String _alertsEndpoint = '$_baseUrl/everbridge/incidents';
+
+  /// Initializes the alert notifier with persisted state
+  static Future<void> initializeAlertNotifier() async {
+    final hasImportant = await getSetting(Setting.hasImportantAlerts);
+    alertNotifier.value = hasImportant;
+  }
 
   static Future<List<Station>> fetchStations() async {
     try {
@@ -54,6 +63,30 @@ class ApiService {
       debugPrint('Error fetching alerts: $e');
       return null;
     }
+  }
+
+  static Future<List<Incident>?> loadAlerts({bool forceRefresh = true}) async {
+    List<Incident>? alerts = [];
+
+    if (!forceRefresh && !(await shouldFetchAlerts())) {
+      alerts = await getCachedAlerts();
+    } else {
+      alerts = await fetchAlerts();
+    }
+
+    // Update alert status and notifier
+    if (alerts != null) {
+      final hasImportant =
+          alerts.any((alert) => alert.subject != "PATHAlert - Elevators");
+
+      // Update the notifier for immediate UI updates
+      alertNotifier.value = hasImportant;
+
+      // Persist to storage for app restarts
+      await setSetting(Setting.hasImportantAlerts, hasImportant);
+    }
+
+    return alerts;
   }
 
   // PATH database API functionality

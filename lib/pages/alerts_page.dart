@@ -25,27 +25,29 @@ class _AlertsPageState extends State<AlertsPage> {
   Future<void> _loadCachedAlerts() async {
     final cachedAlerts = await getCachedAlerts();
     setState(() => _alerts = cachedAlerts);
-    await _fetchAlerts(showLoading: true);
+    await _refreshAlerts(forceRefresh: false);
   }
 
-  Future<void> _fetchAlerts({bool showLoading = false}) async {
+  Future<void> _refreshAlerts({bool forceRefresh = true}) async {
     if (!mounted) return;
 
-    if (showLoading) {
+    // Assume forceRefresh implies that refresh indicator is loading
+    if (!forceRefresh) {
       setState(() => _isLoading = true);
     }
 
-    final alerts = await ApiService.fetchAlerts();
+    final alerts = await ApiService.loadAlerts(forceRefresh: forceRefresh);
 
     if (!mounted) return;
 
-    if (alerts != null) {
-      setState(() => _alerts = alerts);
-    }
-
-    if (mounted && showLoading) {
-      setState(() => _isLoading = false);
-    }
+    setState(() {
+      if (alerts != null) {
+        _alerts = alerts;
+      }
+      if (!forceRefresh) {
+        _isLoading = false;
+      }
+    });
   }
 
   @override
@@ -59,7 +61,7 @@ class _AlertsPageState extends State<AlertsPage> {
         forceMaterialTransparency: true,
       ),
       body: RefreshIndicator(
-        onRefresh: _fetchAlerts,
+        onRefresh: _refreshAlerts,
         child: Column(
           children: [
             SizedBox(

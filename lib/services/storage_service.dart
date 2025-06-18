@@ -10,6 +10,7 @@ enum StorageType {
   integer,
   stringList,
   dateTime,
+  boolean,
 }
 
 // Single enum for ALL storage keys with type safety
@@ -20,6 +21,7 @@ enum Setting<T> {
   dbChecksum<String>(
       'db_checksum', "499C6586DE8D66E0028A71F21EB9E55C", StorageType.string),
   lastDbDownload<DateTime?>('last_db_download', null, StorageType.dateTime),
+  lastAlertsFetch<DateTime?>('last_alerts_fetch', null, StorageType.dateTime),
 
   // Train display settings
   progressBarDuration<int>('progress_bar_duration', 30, StorageType.integer),
@@ -27,6 +29,7 @@ enum Setting<T> {
 
   // User data
   filters<List<String>>('filters', [], StorageType.stringList),
+  hasImportantAlerts<bool>('has_important_alerts', false, StorageType.boolean),
   cachedAlertsJson<String>('cached_alerts', '', StorageType.string);
 
   const Setting(this.key, this.defaultValue, this.storageType);
@@ -67,6 +70,9 @@ Future<T> getSetting<T>(Setting<T> setting) async {
         return (timestamp != null
             ? DateTime.fromMillisecondsSinceEpoch(timestamp)
             : defaultValue) as T;
+
+      case StorageType.boolean:
+        return (preferences.getBool(key) ?? defaultValue) as T;
     }
   } catch (e) {
     debugPrint('Error loading ${setting.key}: $e');
@@ -97,6 +103,9 @@ Future<void> setSetting<T>(Setting<T> setting, T value) async {
         } else {
           await preferences.remove(key);
         }
+
+      case StorageType.boolean:
+        await preferences.setBool(key, value as bool);
     }
   } catch (e) {
     debugPrint('Error saving ${setting.key}: $e');
@@ -120,6 +129,17 @@ Future<bool> shouldDownloadDatabase() async {
     return DateTime.now().difference(lastDownload).inHours >= 6;
   } catch (e) {
     debugPrint('Error checking database download status: $e');
+    return true;
+  }
+}
+
+Future<bool> shouldFetchAlerts() async {
+  try {
+    final lastFetch = await getSetting(Setting.lastAlertsFetch);
+    if (lastFetch == null) return true;
+    return DateTime.now().difference(lastFetch).inHours >= 6;
+  } catch (e) {
+    debugPrint('Error checking alerts fetch status: $e');
     return true;
   }
 }

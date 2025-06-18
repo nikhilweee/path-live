@@ -27,18 +27,22 @@ class _MainPageState extends State<MainPage> {
   bool _isFabVisible = true;
   bool _isLoadingLocation = false;
   int _progressBarDuration = 15; // default value
+  bool _hasImportantAlerts = false;
 
   @override
   void initState() {
     super.initState();
     _initialize();
     _scrollController.addListener(_onScroll);
+    alertNotifier.addListener(_onAlertsChanged);
   }
 
   Future<void> _initialize() async {
     await _loadFilters();
     await _loadProgressBarDuration();
+    await ApiService.initializeAlertNotifier();
     await _fetchStations();
+    await ApiService.loadAlerts(forceRefresh: false);
   }
 
   void _onScroll() {
@@ -47,6 +51,14 @@ class _MainPageState extends State<MainPage> {
 
     if (_isFabVisible != shouldShow) {
       setState(() => _isFabVisible = shouldShow);
+    }
+  }
+
+  void _onAlertsChanged() {
+    if (mounted) {
+      setState(() {
+        _hasImportantAlerts = alertNotifier.value;
+      });
     }
   }
 
@@ -163,6 +175,7 @@ class _MainPageState extends State<MainPage> {
   void dispose() {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
+    alertNotifier.removeListener(_onAlertsChanged);
     super.dispose();
   }
 
@@ -188,7 +201,14 @@ class _MainPageState extends State<MainPage> {
             tooltip: 'Settings',
           ),
           IconButton(
-            icon: const Icon(Icons.notifications_outlined),
+            icon: Icon(
+              _hasImportantAlerts
+                  ? Icons.notifications_active
+                  : Icons.notifications_outlined,
+              color: _hasImportantAlerts
+                  ? Theme.of(context).colorScheme.error
+                  : null,
+            ),
             onPressed: _navigateToAlerts,
             tooltip: 'Alerts',
           ),
@@ -220,7 +240,9 @@ class _MainPageState extends State<MainPage> {
                   return ListView.builder(
                     controller: _scrollController,
                     physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    // Add some buffer at the end of the list
+                    padding: const EdgeInsets.only(
+                        left: 8.0, right: 8.0, bottom: 64.0),
                     itemCount:
                         filteredStations.isEmpty ? 1 : filteredStations.length,
                     itemBuilder: (context, index) {
