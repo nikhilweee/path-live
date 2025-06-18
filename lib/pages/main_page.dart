@@ -19,11 +19,13 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   final ScrollController _scrollController = ScrollController();
+  final Map<String, GlobalKey> _chipKeys = {};
 
   List<Station> _stations = [];
   List<String> _filters = [];
   IconData _fabIcon = Icons.near_me_outlined;
   bool _isFabVisible = true;
+  bool _isLoadingLocation = false;
   int _progressBarDuration = 15; // default value
 
   @override
@@ -49,11 +51,15 @@ class _MainPageState extends State<MainPage> {
   }
 
   Future<void> _requestLocationPermission() async {
+    setState(() => _isLoadingLocation = true);
+
     final hasPermission = await LocationService.requestLocationPermission();
 
     if (hasPermission) {
       await _getUserLocation();
     }
+
+    setState(() => _isLoadingLocation = false);
   }
 
   Future<void> _getUserLocation() async {
@@ -65,6 +71,18 @@ class _MainPageState extends State<MainPage> {
         _filters = [closestStation];
       });
       await _saveFilters();
+
+      // Auto-scroll to the selected chip
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final chipKey = _chipKeys[closestStation];
+        if (chipKey?.currentContext != null) {
+          Scrollable.ensureVisible(
+            chipKey!.currentContext!,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      });
     }
   }
 
@@ -103,16 +121,20 @@ class _MainPageState extends State<MainPage> {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          children: LocationService.stationCoordinates.keys
-              .map((station) => Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: FilterChip(
-                      label: Text(station),
-                      selected: _filters.contains(station),
-                      onSelected: (_) => _toggleFilter(station),
-                    ),
-                  ))
-              .toList(),
+          children: LocationService.stationCoordinates.keys.map((station) {
+            // Create or get the GlobalKey for this station
+            _chipKeys[station] ??= GlobalKey();
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: FilterChip(
+                key: _chipKeys[station],
+                label: Text(station),
+                selected: _filters.contains(station),
+                onSelected: (_) => _toggleFilter(station),
+              ),
+            );
+          }).toList(),
         ),
       ),
     );
@@ -197,12 +219,14 @@ class _MainPageState extends State<MainPage> {
                     controller: _scrollController,
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    itemCount: filteredStations.isEmpty ? 1 : filteredStations.length,
+                    itemCount:
+                        filteredStations.isEmpty ? 1 : filteredStations.length,
                     itemBuilder: (context, index) {
                       if (filteredStations.isEmpty) {
                         return SizedBox(
                           height: constraints.maxHeight,
-                          child: const Center(child: Text('Failed to load data')),
+                          child:
+                              const Center(child: Text('Failed to load data')),
                         );
                       }
                       return StationWidget(
@@ -223,9 +247,17 @@ class _MainPageState extends State<MainPage> {
         duration: const Duration(milliseconds: 300),
         offset: _isFabVisible ? Offset.zero : const Offset(0, 2),
         child: FloatingActionButton(
-          onPressed: _requestLocationPermission,
+          onPressed: _isLoadingLocation ? null : _requestLocationPermission,
           tooltip: 'Get Location',
-          child: Icon(_fabIcon),
+          child: _isLoadingLocation
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                  ),
+                )
+              : Icon(_fabIcon),
         ),
       ),
     );

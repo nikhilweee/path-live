@@ -72,9 +72,9 @@ class _SettingsPageState extends State<SettingsPage> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Settings reset to defaults'),
-          duration: Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
+          content: Text('Restored default settings.'),
+          duration: Duration(seconds: 3),
+          behavior: SnackBarBehavior.fixed,
         ),
       );
     }
