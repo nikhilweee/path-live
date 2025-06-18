@@ -6,7 +6,7 @@ import '../services/api_service.dart';
 import '../services/location_service.dart';
 import '../services/storage_service.dart';
 import '../widgets/station_widget.dart';
-import '../widgets/progress_bar.dart';
+import '../widgets/progress_bar_widget.dart';
 import 'alerts_page.dart';
 import 'settings_page.dart';
 
@@ -196,7 +196,7 @@ class _MainPageState extends State<MainPage> {
       ),
       body: Column(
         children: [
-          ProgressBar(
+          ProgressBarWidget(
             duration: Duration(seconds: _progressBarDuration),
             color: Theme.of(context).colorScheme.primary,
             backgroundColor: Theme.of(context).colorScheme.surfaceContainer,

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-class ProgressBar extends StatefulWidget {
+class ProgressBarWidget extends StatefulWidget {
   final Duration duration;
   final Color color;
   final Color backgroundColor;
   final Future<void> Function() onCompleted;
 
-  const ProgressBar({
+  const ProgressBarWidget({
     super.key,
     required this.duration,
     required this.color,
@@ -15,10 +15,10 @@ class ProgressBar extends StatefulWidget {
   });
 
   @override
-  State<ProgressBar> createState() => _ProgressBarState();
+  State<ProgressBarWidget> createState() => _ProgressBarWidgetState();
 }
 
-class _ProgressBarState extends State<ProgressBar>
+class _ProgressBarWidgetState extends State<ProgressBarWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   bool _isRefreshing = false;
@@ -35,7 +35,7 @@ class _ProgressBarState extends State<ProgressBar>
   }
 
   @override
-  void didUpdateWidget(ProgressBar oldWidget) {
+  void didUpdateWidget(ProgressBarWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.duration != widget.duration) {
       _animationController.duration = widget.duration;
