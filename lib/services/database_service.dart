@@ -81,7 +81,7 @@ class DatabaseService {
   }
 
   static Future<List<TrainSchedule>> getTrainsForDay(
-      String stopName, tz.TZDateTime date) async {
+      String stopName, DateTime date) async {
     final dbPath = await ApiService.updatePathDatabase();
     if (dbPath == null) {
       throw Exception('Failed to initialize database.');
@@ -90,7 +90,10 @@ class DatabaseService {
     final db = await openDatabase(dbPath, readOnly: true);
     try {
       tz.initializeTimeZones();
-      final dayColumn = _getDayColumn(date);
+      final nyLocation = tz.getLocation('America/New_York');
+      final tzDateTime =
+          tz.TZDateTime(nyLocation, date.year, date.month, date.day);
+      final dayColumn = _getDayColumn(tzDateTime);
 
       debugPrint("running db query for $dayColumn at $stopName");
 
@@ -106,7 +109,7 @@ class DatabaseService {
       debugPrint("found ${results.length} results");
 
       // Convert the date to a simple DateTime for the date field
-      final dateOnly = DateTime(date.year, date.month, date.day);
+      final dateOnly = DateTime(tzDateTime.year, tzDateTime.month, tzDateTime.day);
       return results
           .map((row) => TrainSchedule.fromMap(row, date: dateOnly))
           .toList();

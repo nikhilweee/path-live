@@ -117,29 +117,12 @@ class Incident {
     );
   }
 
-  DateTime get createdDateTime {
-    try {
-      return DateTime.fromMillisecondsSinceEpoch(int.parse(createdDate));
-    } catch (e) {
-      return DateTime.now();
-    }
-  }
-
   DateTime get modifiedDateTime {
     try {
       return DateTime.fromMillisecondsSinceEpoch(int.parse(modifiedDate));
     } catch (e) {
       return DateTime.now();
     }
-  }
-
-  String get formattedCreatedDate {
-    final date = createdDateTime;
-
-    String hour = date.hour.toString().padLeft(2, '0');
-    String minute = date.minute.toString().padLeft(2, '0');
-
-    return '${date.month}/${date.day} $hour:$minute';
   }
 
   String get formattedModifiedDate {

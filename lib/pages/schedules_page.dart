@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import '../models/models.dart';
-import '../services/schedule_service.dart';
+import '../services/database_service.dart';
 import '../widgets/schedule_card.dart';
 
 class SchedulesPage extends StatefulWidget {
@@ -83,11 +83,11 @@ class _SchedulesPageState extends State<SchedulesPage> {
     final tomorrow = now.add(const Duration(days: 1));
 
     final trains = <TrainSchedule>[];
-    trains.addAll(await ScheduleService.getTrainsForDate(
+    trains.addAll(await DatabaseService.getTrainsForDay(
         widget.station.consideredStationFullName, yesterday));
-    trains.addAll(await ScheduleService.getTrainsForDate(
+    trains.addAll(await DatabaseService.getTrainsForDay(
         widget.station.consideredStationFullName, today));
-    trains.addAll(await ScheduleService.getTrainsForDate(
+    trains.addAll(await DatabaseService.getTrainsForDay(
         widget.station.consideredStationFullName, tomorrow));
 
     // Sort all trains by datetime
@@ -117,7 +117,7 @@ class _SchedulesPageState extends State<SchedulesPage> {
     // Recalculate center index for filtered trains
     int filteredCenterIndex = 0;
     for (int i = 0; i < filteredTrains.length; i++) {
-      if (!ScheduleService.isTrainInPast(filteredTrains[i])) {
+      if (!filteredTrains[i].departureDateTime.isBefore(DateTime.now())) {
         filteredCenterIndex = i;
         break;
       }
