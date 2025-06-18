@@ -60,9 +60,12 @@ class _TrainCardState extends State<TrainCard> {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CountdownWidget(
-                  secondsToArrival: widget.train.secondsToArrival,
-                  lastUpdated: widget.train.lastUpdated,
+                // Isolate countdown updates with RepaintBoundary
+                RepaintBoundary(
+                  child: CountdownWidget(
+                    secondsToArrival: widget.train.secondsToArrival,
+                    lastUpdated: widget.train.lastUpdated,
+                  ),
                 ),
                 BadgeWidget(
                   text: widget.train.arrivalTimeMessage,

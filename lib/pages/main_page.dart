@@ -196,11 +196,13 @@ class _MainPageState extends State<MainPage> {
       ),
       body: Column(
         children: [
-          ProgressBarWidget(
-            duration: Duration(seconds: _progressBarDuration),
-            color: Theme.of(context).colorScheme.primary,
-            backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
-            onCompleted: _fetchStations,
+          RepaintBoundary(
+            child: ProgressBarWidget(
+              duration: Duration(seconds: _progressBarDuration),
+              color: Theme.of(context).colorScheme.primary,
+              backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+              onCompleted: _fetchStations,
+            ),
           ),
           AnimatedContainer(
             color: Theme.of(context).colorScheme.surfaceContainerLow,
