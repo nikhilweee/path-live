@@ -4,23 +4,21 @@ import '../utils/time_utils.dart';
 import '../services/storage_service.dart';
 import 'badge_widget.dart';
 
-class RealTimeDisplay extends StatefulWidget {
+class CountdownWidget extends StatefulWidget {
   final String secondsToArrival;
   final String lastUpdated;
-  final String arrivalTimeMessage;
 
-  const RealTimeDisplay({
+  const CountdownWidget({
     super.key,
     required this.secondsToArrival,
     required this.lastUpdated,
-    required this.arrivalTimeMessage,
   });
 
   @override
-  State<RealTimeDisplay> createState() => _RealTimeDisplayState();
+  State<CountdownWidget> createState() => _CountdownWidgetState();
 }
 
-class _RealTimeDisplayState extends State<RealTimeDisplay> {
+class _CountdownWidgetState extends State<CountdownWidget> {
   bool _showCountdown = false;
   int _countdownThreshold = 600;
   Timer? _countdownTimer;
@@ -32,7 +30,7 @@ class _RealTimeDisplayState extends State<RealTimeDisplay> {
   }
 
   @override
-  void didUpdateWidget(RealTimeDisplay oldWidget) {
+  void didUpdateWidget(CountdownWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (_hasDataChanged(oldWidget)) {
       _updateCountdownVisibility();
@@ -47,7 +45,7 @@ class _RealTimeDisplayState extends State<RealTimeDisplay> {
     super.dispose();
   }
 
-  bool _hasDataChanged(RealTimeDisplay oldWidget) {
+  bool _hasDataChanged(CountdownWidget oldWidget) {
     return oldWidget.secondsToArrival != widget.secondsToArrival ||
         oldWidget.lastUpdated != widget.lastUpdated;
   }
@@ -110,26 +108,19 @@ class _RealTimeDisplayState extends State<RealTimeDisplay> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_showCountdown) {
+      return const SizedBox.shrink();
+    }
+
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (_showCountdown)
-          BadgeWidget(
-            text: TimeUtils.formatSecondsToArrival(
-              widget.secondsToArrival,
-              widget.lastUpdated,
-            ),
-            backgroundColor: colorScheme.error,
-            textColor: colorScheme.onError,
-          ),
-        BadgeWidget(
-          text: widget.arrivalTimeMessage,
-          backgroundColor: colorScheme.primary,
-          textColor: colorScheme.onPrimary,
-        ),
-      ],
+    return BadgeWidget(
+      text: TimeUtils.formatSecondsToArrival(
+        widget.secondsToArrival,
+        widget.lastUpdated,
+      ),
+      backgroundColor: colorScheme.error,
+      textColor: colorScheme.onError,
     );
   }
 }

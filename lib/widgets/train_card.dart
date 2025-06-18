@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import 'color_circle_widget.dart';
-import 'real_time_display.dart';
+import 'countdown_widget.dart';
+import 'badge_widget.dart';
 
 class TrainCard extends StatefulWidget {
   final Train train;
@@ -56,10 +57,19 @@ class _TrainCardState extends State<TrainCard> {
                 ],
               ),
             ),
-            RealTimeDisplay(
-              secondsToArrival: widget.train.secondsToArrival,
-              lastUpdated: widget.train.lastUpdated,
-              arrivalTimeMessage: widget.train.arrivalTimeMessage,
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CountdownWidget(
+                  secondsToArrival: widget.train.secondsToArrival,
+                  lastUpdated: widget.train.lastUpdated,
+                ),
+                BadgeWidget(
+                  text: widget.train.arrivalTimeMessage,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  textColor: Theme.of(context).colorScheme.onPrimary,
+                ),
+              ],
             ),
           ],
         ),

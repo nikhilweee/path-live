@@ -154,7 +154,7 @@ class _MainPageState extends State<MainPage> {
     ).then((_) {
       // Reload settings when returning from settings page
       _loadProgressBarDuration();
-      // Trigger a rebuild to update all RealTimeDisplay widgets
+      // Trigger a rebuild to update all countdown widgets
       setState(() {});
     });
   }
