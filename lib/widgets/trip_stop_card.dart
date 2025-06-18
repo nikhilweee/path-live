@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../utils/time_utils.dart';
 import '../models/models.dart';
-import 'color_circle.dart';
+import 'color_circle_widget.dart';
 import 'badge_widget.dart';
 
 class TripStopCard extends StatelessWidget {

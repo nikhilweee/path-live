@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
-import 'color_circle.dart';
+import 'color_circle_widget.dart';
 import 'real_time_display.dart';
 
 class TrainCard extends StatefulWidget {
