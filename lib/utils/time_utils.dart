@@ -8,19 +8,6 @@ class TimeUtils {
     return timeString;
   }
 
-  /// Formats date in "MM/DD" format
-  static String formatDate(DateTime date) {
-    final month = date.month.toString().padLeft(2, '0');
-    final day = date.day.toString().padLeft(2, '0');
-    return '$month/$day';
-  }
-
-  /// Gets current time in "HH:MM:SS" format
-  static String getCurrentTimeString() {
-    final now = DateTime.now();
-    return '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:00';
-  }
-
   /// Calculates remaining seconds until arrival based on original data and current time
   static int remainingSeconds(String secondsToArrival, String lastUpdated) {
     final lastUpdatedTime = DateTime.parse(lastUpdated);
@@ -40,18 +27,5 @@ class TimeUtils {
     final sign = totalSeconds < 0 ? "-" : "";
 
     return '$sign$formattedMinutes:$formattedSeconds';
-  }
-
-  /// Formats time as "xx min" or "now" if arrival is imminent
-  static String formatMinutesToArrival(
-      String secondsToArrival, String lastUpdated) {
-    final totalSeconds = remainingSeconds(secondsToArrival, lastUpdated);
-
-    if (totalSeconds <= 60) {
-      return "now";
-    }
-
-    final minutes = (totalSeconds / 60).floor();
-    return "$minutes min";
   }
 }

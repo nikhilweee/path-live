@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../models/models.dart';
 import '../services/api_service.dart';
@@ -110,7 +111,7 @@ class _AlertCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  alert.formattedModifiedDate,
+                  DateFormat('M/d H:mm').format(alert.modifiedDateTime),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),

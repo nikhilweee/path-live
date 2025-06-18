@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class LatLong {
   final double latitude;
   final double longitude;
@@ -118,20 +120,7 @@ class Incident {
   }
 
   DateTime get modifiedDateTime {
-    try {
-      return DateTime.fromMillisecondsSinceEpoch(int.parse(modifiedDate));
-    } catch (e) {
-      return DateTime.now();
-    }
-  }
-
-  String get formattedModifiedDate {
-    final date = modifiedDateTime;
-
-    String hour = date.hour.toString().padLeft(2, '0');
-    String minute = date.minute.toString().padLeft(2, '0');
-
-    return '${date.month}/${date.day} $hour:$minute';
+    return DateTime.fromMillisecondsSinceEpoch(int.parse(modifiedDate));
   }
 }
 
@@ -155,18 +144,15 @@ class TrainSchedule {
   });
 
   DateTime get departureDateTime {
-    final timeParts = departureTime.split(':');
-    final hour = int.parse(timeParts[0]);
-    final minute = int.parse(timeParts[1]);
-    final second = timeParts.length > 2 ? int.parse(timeParts[2]) : 0;
-
+    // Parse just the time part using intl
+    final timeOnly = DateFormat('HH:mm:ss').parse(departureTime);
     return DateTime(
       departureDate.year,
       departureDate.month,
       departureDate.day,
-      hour,
-      minute,
-      second,
+      timeOnly.hour,
+      timeOnly.minute,
+      timeOnly.second,
     );
   }
 

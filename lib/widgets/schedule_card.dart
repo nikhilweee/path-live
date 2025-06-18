@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../utils/time_utils.dart';
 import '../models/models.dart';
 import '../pages/trip_details_page.dart';
@@ -54,7 +55,7 @@ class ScheduleCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 BadgeWidget(
-                  text: TimeUtils.formatDate(schedule.departureDate),
+                  text: DateFormat('M/d').format(schedule.departureDate),
                   backgroundColor: isPast
                       ? Theme.of(context).colorScheme.error
                       : Theme.of(context).colorScheme.primary,
