@@ -16,15 +16,15 @@ class _SettingsPageState extends State<SettingsPage> {
   static const _settingsConfig = [
     {
       'key': 'progressBarDuration',
-      'title': 'Auto-refresh',
-      'subtitle': 'Refresh interval',
+      'title': 'Refresh Every',
+      'subtitle': 'How often to refresh new data',
       'options': [15, 30, 60],
-      'labels': ['15s', '30s', '60s'],
+      'labels': ['15s', '30s', '1min'],
     },
     {
       'key': 'countdownThreshold',
-      'title': 'Countdown timer',
-      'subtitle': 'When to show countdown',
+      'title': 'Countdown Threshold',
+      'subtitle': 'When to start departure countdown',
       'options': [0, 300, 900],
       'labels': ['Never', '5min', '15min'],
     },

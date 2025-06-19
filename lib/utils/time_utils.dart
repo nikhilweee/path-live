@@ -15,10 +15,8 @@ class TimeUtils {
     return int.parse(secondsToArrival) - timePassed.inSeconds;
   }
 
-  /// Formats time as "MM:SS" with negative sign if needed
-  static String formatSecondsToArrival(
-      String secondsToArrival, String lastUpdated) {
-    final totalSeconds = remainingSeconds(secondsToArrival, lastUpdated);
+  /// Formats total seconds as "MM:SS" with negative sign if needed
+  static String formatTotalSeconds(int totalSeconds) {
     final minutes = totalSeconds.abs() ~/ 60;
     final seconds = totalSeconds.abs() % 60;
 

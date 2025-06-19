@@ -25,7 +25,8 @@ class StationWidget extends StatelessWidget {
                 ),
               );
             },
-            child: Card.outlined(
+            child: Card(
+              color: Theme.of(context).colorScheme.secondaryContainer,
               child: Center(
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -38,13 +39,10 @@ class StationWidget extends StatelessWidget {
             ),
           ),
         ),
-        ...station.trains
-            .asMap()
-            .entries
-            .map<Widget>((entry) => TrainCard(
-                  key: ValueKey('train_${entry.key}'),
-                  train: entry.value,
-                )),
+        ...station.trains.asMap().entries.map<Widget>((entry) => TrainCard(
+              key: ValueKey('train_${entry.key}'),
+              train: entry.value,
+            )),
       ],
     );
   }

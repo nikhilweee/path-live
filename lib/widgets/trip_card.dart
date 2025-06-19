@@ -55,14 +55,9 @@ class TripCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 BadgeWidget(
-                  text: DateFormat('M/d').format(trip.departureDate),
-                  backgroundColor: isPast
-                      ? Theme.of(context).colorScheme.error
-                      : Theme.of(context).colorScheme.primary,
-                  textColor: isPast
-                      ? Theme.of(context).colorScheme.onError
-                      : Theme.of(context).colorScheme.onPrimary,
-                ),
+                    text: DateFormat('M/d').format(trip.departureDate),
+                    backgroundColor: Theme.of(context).colorScheme.secondary,
+                    textColor: Theme.of(context).colorScheme.onSecondary),
                 BadgeWidget(
                   text: TimeUtils.formatTime(trip.departureTime),
                   backgroundColor: isPast
