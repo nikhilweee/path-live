@@ -69,16 +69,25 @@ class _AlertsPageState extends State<AlertsPage> {
               child: _isLoading ? const LinearProgressIndicator() : null,
             ),
             Expanded(
-              child: _alerts.isEmpty
-                  ? const Center(child: Text('No alerts'))
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(16.0),
-                      itemCount: _alerts.length,
-                      itemBuilder: (context, index) {
-                        final alert = _alerts[index];
-                        return _AlertCard(alert: alert);
-                      },
-                    ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(16.0),
+                    itemCount: _alerts.isEmpty ? 1 : _alerts.length,
+                    itemBuilder: (context, index) {
+                      if (_alerts.isEmpty) {
+                        return SizedBox(
+                          height: constraints.maxHeight,
+                          child: const Center(child: Text('No alerts')),
+                        );
+                      }
+                      final alert = _alerts[index];
+                      return _AlertCard(alert: alert);
+                    },
+                  );
+                },
+              ),
             ),
           ],
         ),

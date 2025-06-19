@@ -49,6 +49,7 @@ class ApiService {
 
   static Future<List<Incident>?> fetchAlerts() async {
     try {
+      debugPrint("Fetching alerts");
       final response = await http.get(Uri.parse(_alertsEndpoint));
 
       if (response.statusCode != 200) return [];

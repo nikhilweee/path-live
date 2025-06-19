@@ -240,9 +240,9 @@ class _MainPageState extends State<MainPage> {
                   return ListView.builder(
                     controller: _scrollController,
                     physics: const AlwaysScrollableScrollPhysics(),
-                    // Add some buffer at the end of the list
-                    padding: const EdgeInsets.only(
-                        left: 8.0, right: 8.0, bottom: 64.0),
+                    // Add bottom padding that's half the max height
+                    padding:
+                        EdgeInsets.only(left: 8.0, right: 8.0, bottom: 16.0),
                     itemCount:
                         filteredStations.isEmpty ? 1 : filteredStations.length,
                     itemBuilder: (context, index) {
