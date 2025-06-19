@@ -97,10 +97,8 @@ class _CountdownWidgetState extends State<CountdownWidget> {
   void _startCountdownTimer() {
     _stopCountdownTimer();
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) {
-        if (_showCountdown) {
-          setState(() {});
-        }
+      if (mounted && _showCountdown) {
+        setState(() {});
       }
     });
   }

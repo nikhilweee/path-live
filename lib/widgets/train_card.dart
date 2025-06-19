@@ -23,10 +23,10 @@ class _TrainCardState extends State<TrainCard> {
   void didUpdateWidget(TrainCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.train.lastUpdated != widget.train.lastUpdated) {
-      // Reset highlight if this is likely a new train
       int oldSeconds = int.parse(oldWidget.train.secondsToArrival);
       int newSeconds = int.parse(widget.train.secondsToArrival);
       if (oldWidget.train.target != widget.train.target ||
+          // Reset highlight if this is likely a new train
           (newSeconds - oldSeconds).abs() > 300) {
         setState(() => _isHighlighted = false);
       }
