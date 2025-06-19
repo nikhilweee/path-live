@@ -7,6 +7,85 @@ class LatLong {
   const LatLong(this.latitude, this.longitude);
 }
 
+class Alert {
+  final String subject;
+  final String preMessage;
+  final String createdDate;
+  final String modifiedDate;
+
+  const Alert({
+    required this.subject,
+    required this.preMessage,
+    required this.createdDate,
+    required this.modifiedDate,
+  });
+
+  factory Alert.fromJson(Map<String, dynamic> json) {
+    final incidentMessage = json['incidentMessage'] ?? {};
+    return Alert(
+      subject: incidentMessage['subject'] ?? '',
+      preMessage: incidentMessage['preMessage'] ?? '',
+      createdDate: json['CreatedDate'] ?? '',
+      modifiedDate: json['ModifiedDate'] ?? '',
+    );
+  }
+
+  DateTime get modifiedDateTime {
+    return DateTime.fromMillisecondsSinceEpoch(int.parse(modifiedDate));
+  }
+}
+
+class Station {
+  final String consideredStation;
+  final List<Train> trains;
+  final String consideredStationFullName;
+
+  static const Map<String, String> stationNames = {
+    "NWK": "Newark",
+    "HAR": "Harrison",
+    "JSQ": "Journal Square",
+    "GRV": "Grove Street",
+    "NEW": "Newport",
+    "EXP": "Exchange Place",
+    "HOB": "Hoboken",
+    "WTC": "World Trade Center",
+    "CHR": "Christopher Street",
+    "09S": "9th Street",
+    "14S": "14th Street",
+    "23S": "23rd Street",
+    "33S": "33rd Street"
+  };
+
+  const Station({
+    required this.consideredStation,
+    required this.trains,
+    required this.consideredStationFullName,
+  });
+
+  factory Station.fromJson(Map<String, dynamic> json) {
+    String stationCode = json['consideredStation'];
+    String consideredStationFullName = stationNames[stationCode] ?? stationCode;
+
+    // Flatten all trains from all destinations
+    List<Train> allTrains = [];
+    if (json['destinations'] != null) {
+      for (var destinationJson in json['destinations'] as List) {
+        if (destinationJson['messages'] != null) {
+          for (var trainJson in destinationJson['messages'] as List) {
+            allTrains.add(Train.fromJson(trainJson));
+          }
+        }
+      }
+    }
+
+    return Station(
+      consideredStation: json['consideredStation'],
+      consideredStationFullName: consideredStationFullName,
+      trains: allTrains,
+    );
+  }
+}
+
 class Train {
   final String target;
   final String secondsToArrival;
@@ -36,95 +115,7 @@ class Train {
   }
 }
 
-class Destination {
-  final String label;
-  final List<Train> trains;
-
-  const Destination({
-    required this.label,
-    required this.trains,
-  });
-
-  factory Destination.fromJson(Map<String, dynamic> json) {
-    return Destination(
-      label: json['label'],
-      trains: (json['messages'] as List)
-          .map((trainJson) => Train.fromJson(trainJson))
-          .toList(),
-    );
-  }
-}
-
-class Station {
-  final String consideredStation;
-  final List<Destination> destinations;
-  final String consideredStationFullName;
-
-  static const Map<String, String> stationNames = {
-    "NWK": "Newark",
-    "HAR": "Harrison",
-    "JSQ": "Journal Square",
-    "GRV": "Grove Street",
-    "NEW": "Newport",
-    "EXP": "Exchange Place",
-    "HOB": "Hoboken",
-    "WTC": "World Trade Center",
-    "CHR": "Christopher Street",
-    "09S": "9th Street",
-    "14S": "14th Street",
-    "23S": "23rd Street",
-    "33S": "33rd Street"
-  };
-
-  const Station({
-    required this.consideredStation,
-    required this.destinations,
-    required this.consideredStationFullName,
-  });
-
-  factory Station.fromJson(Map<String, dynamic> json) {
-    String stationCode = json['consideredStation'];
-    String consideredStationFullName = stationNames[stationCode] ?? stationCode;
-
-    return Station(
-      consideredStation: json['consideredStation'],
-      consideredStationFullName: consideredStationFullName,
-      destinations: (json['destinations'] as List)
-          .map((destinationJson) => Destination.fromJson(destinationJson))
-          .toList(),
-    );
-  }
-}
-
-class Incident {
-  final String subject;
-  final String preMessage;
-  final String createdDate;
-  final String modifiedDate;
-
-  const Incident({
-    required this.subject,
-    required this.preMessage,
-    required this.createdDate,
-    required this.modifiedDate,
-  });
-
-  factory Incident.fromJson(Map<String, dynamic> json) {
-    final incidentMessage = json['incidentMessage'] ?? {};
-    return Incident(
-      subject: incidentMessage['subject'] ?? '',
-      preMessage: incidentMessage['preMessage'] ?? '',
-      createdDate: json['CreatedDate'] ?? '',
-      modifiedDate: json['ModifiedDate'] ?? '',
-    );
-  }
-
-  DateTime get modifiedDateTime {
-    return DateTime.fromMillisecondsSinceEpoch(int.parse(modifiedDate));
-  }
-}
-
-class TrainSchedule {
+class Trip {
   final String tripId;
   final String departureTime;
   final String tripHeadsign;
@@ -133,7 +124,7 @@ class TrainSchedule {
   final String? routeSecondaryRouteColor;
   final DateTime departureDate;
 
-  TrainSchedule({
+  Trip({
     required this.tripId,
     required this.departureTime,
     required this.tripHeadsign,
@@ -156,9 +147,8 @@ class TrainSchedule {
     );
   }
 
-  factory TrainSchedule.fromMap(Map<String, dynamic> map,
-      {required DateTime date}) {
-    return TrainSchedule(
+  factory Trip.fromMap(Map<String, dynamic> map, {required DateTime date}) {
+    return Trip(
       tripId: map['trip_id'] as String,
       departureTime: map['departure_time'] as String,
       tripHeadsign: map['trip_headsign'] as String,
@@ -170,14 +160,14 @@ class TrainSchedule {
   }
 }
 
-class TripStop {
+class Stop {
   final String stopName;
   final String departureTime;
   final int stopSequence;
   final String routeColor;
   final String? routeSecondaryRouteColor;
 
-  TripStop({
+  Stop({
     required this.stopName,
     required this.departureTime,
     required this.stopSequence,
@@ -185,8 +175,8 @@ class TripStop {
     this.routeSecondaryRouteColor,
   });
 
-  factory TripStop.fromMap(Map<String, dynamic> map) {
-    return TripStop(
+  factory Stop.fromMap(Map<String, dynamic> map) {
+    return Stop(
       stopName: map['stop_name'] as String,
       departureTime: map['departure_time'] as String,
       stopSequence: int.parse(map['stop_sequence'].toString()),

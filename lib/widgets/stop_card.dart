@@ -4,19 +4,19 @@ import '../models/models.dart';
 import 'color_circle_widget.dart';
 import 'badge_widget.dart';
 
-class TripStopCard extends StatefulWidget {
-  final TripStop tripStop;
+class StopCard extends StatefulWidget {
+  final Stop tripStop;
 
-  const TripStopCard({
+  const StopCard({
     super.key,
     required this.tripStop,
   });
 
   @override
-  State<TripStopCard> createState() => _TripStopCardState();
+  State<StopCard> createState() => _StopCardState();
 }
 
-class _TripStopCardState extends State<TripStopCard> {
+class _StopCardState extends State<StopCard> {
   bool _isHighlighted = false;
 
   void _toggleHighlight() => setState(() => _isHighlighted = !_isHighlighted);

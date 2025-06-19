@@ -227,7 +227,7 @@ class DatabaseService {
     ''', [...serviceIds, stopName]);
   }
 
-  static Future<List<TrainSchedule>> getTrainsForDay(
+  static Future<List<Trip>> getTrainsForDay(
       String stopName, DateTime date) async {
     final dbPath = await updatePathDatabase();
     if (dbPath == null) {
@@ -259,14 +259,14 @@ class DatabaseService {
       final dateOnly =
           DateTime(tzDateTime.year, tzDateTime.month, tzDateTime.day);
       return results
-          .map((row) => TrainSchedule.fromMap(row, date: dateOnly))
+          .map((row) => Trip.fromMap(row, date: dateOnly))
           .toList();
     } finally {
       await db.close();
     }
   }
 
-  static Future<List<TripStop>> getTripStops(String tripId) async {
+  static Future<List<Stop>> getTripStops(String tripId) async {
     final dbPath = await updatePathDatabase();
     if (dbPath == null) {
       throw Exception('Failed to initialize database.');
@@ -298,7 +298,7 @@ class DatabaseService {
 
       debugPrint("found ${results.length} stops for trip $tripId");
 
-      return results.map((row) => TripStop.fromMap(row)).toList();
+      return results.map((row) => Stop.fromMap(row)).toList();
     } finally {
       await db.close();
     }

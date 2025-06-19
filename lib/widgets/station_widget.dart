@@ -38,17 +38,13 @@ class StationWidget extends StatelessWidget {
             ),
           ),
         ),
-        ...station.destinations.expand((destination) {
-          return destination.trains
-              .asMap()
-              .entries
-              .map<Widget>((entry) => TrainCard(
-                    key: ValueKey(
-                      'train_${destination.label}_${entry.key}',
-                    ),
-                    train: entry.value,
-                  ));
-        }),
+        ...station.trains
+            .asMap()
+            .entries
+            .map<Widget>((entry) => TrainCard(
+                  key: ValueKey('train_${entry.key}'),
+                  train: entry.value,
+                )),
       ],
     );
   }

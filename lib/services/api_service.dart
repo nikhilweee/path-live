@@ -47,7 +47,7 @@ class ApiService {
     alertNotifier.value = hasImportant;
   }
 
-  static Future<List<Incident>?> fetchAlerts() async {
+  static Future<List<Alert>?> fetchAlerts() async {
     try {
       debugPrint("Fetching alerts");
       final response = await http.get(Uri.parse(_alertsEndpoint));
@@ -59,21 +59,21 @@ class ApiService {
         return [];
       }
 
-      final incidents = (jsonData['data'] as List)
-          .map((json) => Incident.fromJson(json))
+      final alerts = (jsonData['data'] as List)
+          .map((json) => Alert.fromJson(json))
           .toList();
 
       // Cache the alerts data
       await cacheAlerts(jsonData['data']);
-      return incidents;
+      return alerts;
     } catch (e) {
       debugPrint('Error fetching alerts: $e');
       return null;
     }
   }
 
-  static Future<List<Incident>?> loadAlerts({bool forceRefresh = true}) async {
-    List<Incident>? alerts = [];
+  static Future<List<Alert>?> loadAlerts({bool forceRefresh = true}) async {
+    List<Alert>? alerts = [];
 
     if (!forceRefresh && !(await shouldFetchAlerts())) {
       alerts = await getCachedAlerts();

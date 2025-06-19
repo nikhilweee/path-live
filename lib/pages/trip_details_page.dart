@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/database_service.dart';
-import '../widgets/trip_stop_card.dart';
+import '../widgets/stop_card.dart';
 
 class TripDetailsPage extends StatefulWidget {
   final String tripId;
@@ -18,7 +18,7 @@ class TripDetailsPage extends StatefulWidget {
 }
 
 class _TripDetailsPageState extends State<TripDetailsPage> {
-  List<TripStop> _tripStops = [];
+  List<Stop> _tripStops = [];
   bool _isLoading = true;
 
   @override
@@ -73,7 +73,7 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
                     : ListView.builder(
                         itemCount: _tripStops.length,
                         itemBuilder: (context, index) {
-                          return TripStopCard(
+                          return StopCard(
                             tripStop: _tripStops[index],
                           );
                         },

@@ -6,11 +6,11 @@ import '../pages/trip_details_page.dart';
 import 'color_circle_widget.dart';
 import 'badge_widget.dart';
 
-class ScheduleCard extends StatelessWidget {
-  final TrainSchedule schedule;
+class TripCard extends StatelessWidget {
+  final Trip schedule;
   final bool isPast;
 
-  const ScheduleCard({
+  const TripCard({
     super.key,
     required this.schedule,
     this.isPast = false,

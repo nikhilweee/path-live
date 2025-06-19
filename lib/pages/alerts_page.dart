@@ -13,7 +13,7 @@ class AlertsPage extends StatefulWidget {
 }
 
 class _AlertsPageState extends State<AlertsPage> {
-  List<Incident> _alerts = [];
+  List<Alert> _alerts = [];
   bool _isLoading = false;
 
   @override
@@ -99,7 +99,7 @@ class _AlertsPageState extends State<AlertsPage> {
 class _AlertCard extends StatelessWidget {
   const _AlertCard({required this.alert});
 
-  final Incident alert;
+  final Alert alert;
 
   @override
   Widget build(BuildContext context) {

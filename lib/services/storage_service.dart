@@ -145,13 +145,13 @@ Future<bool> shouldFetchAlerts() async {
 }
 
 // Alert-specific functions
-Future<List<Incident>> getCachedAlerts() async {
+Future<List<Alert>> getCachedAlerts() async {
   try {
     final cachedAlertsJson = await getSetting(Setting.cachedAlertsJson);
     if (cachedAlertsJson.isEmpty) return [];
 
     final List<dynamic> alertsList = json.decode(cachedAlertsJson);
-    return alertsList.map((json) => Incident.fromJson(json)).toList();
+    return alertsList.map((json) => Alert.fromJson(json)).toList();
   } catch (e) {
     debugPrint('Error loading cached alerts: $e');
     return [];

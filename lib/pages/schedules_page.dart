@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import '../models/models.dart';
 import '../services/database_service.dart';
-import '../widgets/schedule_card.dart';
+import '../widgets/trip_card.dart';
 
 class SchedulesPage extends StatefulWidget {
   final Station station;
@@ -19,7 +19,7 @@ class SchedulesPage extends StatefulWidget {
 class _SchedulesPageState extends State<SchedulesPage> {
   final ScrollController _scrollController = ScrollController();
 
-  List<TrainSchedule> _allTrains = [];
+  List<Trip> _allTrains = [];
   List<String> _filters = [];
   bool _isLoading = true;
   bool _isFilterVisible = true;
@@ -82,7 +82,7 @@ class _SchedulesPageState extends State<SchedulesPage> {
     final today = now;
     final tomorrow = now.add(const Duration(days: 1));
 
-    final trains = <TrainSchedule>[];
+    final trains = <Trip>[];
     trains.addAll(await DatabaseService.getTrainsForDay(
         widget.station.consideredStationFullName, yesterday));
     trains.addAll(await DatabaseService.getTrainsForDay(
@@ -157,7 +157,7 @@ class _SchedulesPageState extends State<SchedulesPage> {
                     (context, index) {
                       final reverseIndex = filteredCenterIndex - 1 - index;
                       if (reverseIndex < 0) return null;
-                      return ScheduleCard(
+                      return TripCard(
                         schedule: filteredTrains[reverseIndex],
                         isPast: true,
                       );
@@ -172,7 +172,7 @@ class _SchedulesPageState extends State<SchedulesPage> {
                     (context, index) {
                       final actualIndex = filteredCenterIndex + index;
                       if (actualIndex >= filteredTrains.length) return null;
-                      return ScheduleCard(
+                      return TripCard(
                         schedule: filteredTrains[actualIndex],
                         isPast: false,
                       );
