@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../utils/time_utils.dart';
 import '../models/models.dart';
-import '../pages/trip_details_page.dart';
+import '../pages/stops_page.dart';
 import 'color_circle_widget.dart';
 import 'badge_widget.dart';
 
@@ -30,7 +30,7 @@ class TripCard extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => TripDetailsPage(
+              builder: (context) => StopsPage(
                 tripId: schedule.tripId,
                 tripHeadsign: schedule.tripHeadsign,
               ),

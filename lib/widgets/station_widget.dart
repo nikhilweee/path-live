@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import 'train_card.dart';
-import '../pages/schedules_page.dart';
+import '../pages/trips_page.dart';
 
 class StationWidget extends StatelessWidget {
   final Station station;
@@ -21,7 +21,7 @@ class StationWidget extends StatelessWidget {
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => SchedulesPage(station: station),
+                  builder: (context) => TripsPage(station: station),
                 ),
               );
             },

@@ -3,21 +3,21 @@ import '../models/models.dart';
 import '../services/database_service.dart';
 import '../widgets/stop_card.dart';
 
-class TripDetailsPage extends StatefulWidget {
+class StopsPage extends StatefulWidget {
   final String tripId;
   final String tripHeadsign;
 
-  const TripDetailsPage({
+  const StopsPage({
     super.key,
     required this.tripId,
     required this.tripHeadsign,
   });
 
   @override
-  State<TripDetailsPage> createState() => _TripDetailsPageState();
+  State<StopsPage> createState() => _StopsPageState();
 }
 
-class _TripDetailsPageState extends State<TripDetailsPage> {
+class _StopsPageState extends State<StopsPage> {
   List<Stop> _tripStops = [];
   bool _isLoading = true;
 

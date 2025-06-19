@@ -4,19 +4,19 @@ import '../models/models.dart';
 import '../services/database_service.dart';
 import '../widgets/trip_card.dart';
 
-class SchedulesPage extends StatefulWidget {
+class TripsPage extends StatefulWidget {
   final Station station;
 
-  const SchedulesPage({
+  const TripsPage({
     super.key,
     required this.station,
   });
 
   @override
-  State<SchedulesPage> createState() => _SchedulesPageState();
+  State<TripsPage> createState() => _TripsPageState();
 }
 
-class _SchedulesPageState extends State<SchedulesPage> {
+class _TripsPageState extends State<TripsPage> {
   final ScrollController _scrollController = ScrollController();
 
   List<Trip> _allTrains = [];
