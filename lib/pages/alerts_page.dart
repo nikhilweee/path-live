@@ -31,7 +31,7 @@ class _AlertsPageState extends State<AlertsPage> {
   Future<void> _refreshAlerts({bool forceRefresh = true}) async {
     if (!mounted) return;
 
-    // Assume forceRefresh implies that refresh indicator is loading
+    // forceRefresh implies RefreshIndicator
     if (!forceRefresh) {
       setState(() => _isLoading = true);
     }

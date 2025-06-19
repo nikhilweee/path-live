@@ -137,7 +137,7 @@ Future<bool> shouldFetchAlerts() async {
   try {
     final lastFetch = await getSetting(Setting.lastAlertsFetch);
     if (lastFetch == null) return true;
-    return DateTime.now().difference(lastFetch).inHours >= 6;
+    return DateTime.now().difference(lastFetch).inHours >= 1;
   } catch (e) {
     debugPrint('Error checking alerts fetch status: $e');
     return true;
