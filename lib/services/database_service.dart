@@ -33,13 +33,13 @@ class DatabaseService {
   }
 
   /// Gets the path to the local database file
-  static Future<String> getDatabasePath() async {
+  static Future<String> _getDatabasePath() async {
     final directory = await getApplicationDocumentsDirectory();
     return '${directory.path}/db.sqlite';
   }
 
   /// Fetches the latest DB checksum from server
-  static Future<String?> fetchLatestDbChecksum() async {
+  static Future<String?> _fetchLatestDbChecksum() async {
     try {
       final currentChecksum = await getSetting(Setting.dbChecksum);
       final response = await http.get(
@@ -61,7 +61,7 @@ class DatabaseService {
   }
 
   /// Downloads and extracts the PATH database
-  static Future<String?> downloadAndExtractDatabase() async {
+  static Future<String?> _downloadAndExtractDatabase() async {
     try {
       final response = await http.post(
         Uri.parse(_datafileEndpoint),
@@ -77,7 +77,7 @@ class DatabaseService {
         return null;
       }
 
-      final dbPath = await getDatabasePath();
+      final dbPath = await _getDatabasePath();
       final zipPath = '$dbPath.zip';
 
       // Write, extract, and cleanup zip
@@ -104,7 +104,7 @@ class DatabaseService {
   /// Updates the PATH database if needed
   static Future<String?> updatePathDatabase() async {
     try {
-      final dbPath = await getDatabasePath();
+      final dbPath = await _getDatabasePath();
       final dbExists = await File(dbPath).exists();
       final shouldDownload = await shouldDownloadDatabase();
 
@@ -115,7 +115,7 @@ class DatabaseService {
       }
 
       // Check for server updates
-      final latestChecksum = await fetchLatestDbChecksum();
+      final latestChecksum = await _fetchLatestDbChecksum();
       if (latestChecksum == null) {
         debugPrint('Failed to fetch checksum');
         return null;
@@ -137,7 +137,7 @@ class DatabaseService {
       }
 
       // Download database
-      final downloadedPath = await downloadAndExtractDatabase();
+      final downloadedPath = await _downloadAndExtractDatabase();
       if (downloadedPath != null) {
         await setSetting(Setting.lastDbDownload, DateTime.now());
         debugPrint('Database updated successfully');
@@ -192,7 +192,7 @@ class DatabaseService {
     return activeServiceIds;
   }
 
-  static Future<List<Map<String, Object?>>> _getTrainsForServices(
+  static Future<List<Map<String, Object?>>> _getTripsForServices(
       Database db, List<String> serviceIds, String stopName) async {
     if (serviceIds.isEmpty) return [];
 
@@ -227,7 +227,7 @@ class DatabaseService {
     ''', [...serviceIds, stopName]);
   }
 
-  static Future<List<Trip>> getTrainsForDay(
+  static Future<List<Trip>> getTripsForDay(
       String stopName, DateTime date) async {
     final dbPath = await updatePathDatabase();
     if (dbPath == null) {
@@ -252,7 +252,7 @@ class DatabaseService {
 
       // Get train schedules for those services
       final results =
-          await _getTrainsForServices(db, activeServiceIds, stopName);
+          await _getTripsForServices(db, activeServiceIds, stopName);
       debugPrint("found ${results.length} results");
 
       // Convert the date to a simple DateTime for the date field

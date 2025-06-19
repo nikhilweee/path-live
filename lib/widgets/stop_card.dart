@@ -5,11 +5,11 @@ import 'color_circle_widget.dart';
 import 'badge_widget.dart';
 
 class StopCard extends StatefulWidget {
-  final Stop tripStop;
+  final Stop stop;
 
   const StopCard({
     super.key,
-    required this.tripStop,
+    required this.stop,
   });
 
   @override
@@ -24,9 +24,9 @@ class _StopCardState extends State<StopCard> {
   @override
   Widget build(BuildContext context) {
     final colors = [
-      widget.tripStop.routeColor,
-      if (widget.tripStop.routeSecondaryRouteColor?.isNotEmpty == true)
-        widget.tripStop.routeSecondaryRouteColor!,
+      widget.stop.routeColor,
+      if (widget.stop.routeSecondaryRouteColor?.isNotEmpty == true)
+        widget.stop.routeSecondaryRouteColor!,
     ];
 
     return GestureDetector(
@@ -43,12 +43,12 @@ class _StopCardState extends State<StopCard> {
             ),
             Expanded(
               child: Text(
-                widget.tripStop.stopName,
+                widget.stop.stopName,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ),
             BadgeWidget(
-              text: TimeUtils.formatTime(widget.tripStop.departureTime),
+              text: TimeUtils.formatTime(widget.stop.departureTime),
               backgroundColor: Theme.of(context).colorScheme.secondary,
               textColor: Theme.of(context).colorScheme.onSecondary,
             ),

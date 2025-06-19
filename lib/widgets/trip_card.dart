@@ -7,21 +7,21 @@ import 'color_circle_widget.dart';
 import 'badge_widget.dart';
 
 class TripCard extends StatelessWidget {
-  final Trip schedule;
+  final Trip trip;
   final bool isPast;
 
   const TripCard({
     super.key,
-    required this.schedule,
+    required this.trip,
     this.isPast = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final colors = [
-      schedule.routeColor,
-      if (schedule.routeSecondaryRouteColor?.isNotEmpty == true)
-        schedule.routeSecondaryRouteColor!,
+      trip.routeColor,
+      if (trip.routeSecondaryRouteColor?.isNotEmpty == true)
+        trip.routeSecondaryRouteColor!,
     ];
 
     return Card(
@@ -31,8 +31,8 @@ class TripCard extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder: (context) => StopsPage(
-                tripId: schedule.tripId,
-                tripHeadsign: schedule.tripHeadsign,
+                tripId: trip.tripId,
+                tripHeadsign: trip.tripHeadsign,
               ),
             ),
           );
@@ -47,7 +47,7 @@ class TripCard extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(schedule.tripHeadsign),
+                  Text(trip.tripHeadsign),
                 ],
               ),
             ),
@@ -55,7 +55,7 @@ class TripCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 BadgeWidget(
-                  text: DateFormat('M/d').format(schedule.departureDate),
+                  text: DateFormat('M/d').format(trip.departureDate),
                   backgroundColor: isPast
                       ? Theme.of(context).colorScheme.error
                       : Theme.of(context).colorScheme.primary,
@@ -64,7 +64,7 @@ class TripCard extends StatelessWidget {
                       : Theme.of(context).colorScheme.onPrimary,
                 ),
                 BadgeWidget(
-                  text: TimeUtils.formatTime(schedule.departureTime),
+                  text: TimeUtils.formatTime(trip.departureTime),
                   backgroundColor: isPast
                       ? Theme.of(context).colorScheme.error
                       : Theme.of(context).colorScheme.primary,

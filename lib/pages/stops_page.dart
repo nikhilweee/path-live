@@ -74,7 +74,7 @@ class _StopsPageState extends State<StopsPage> {
                         itemCount: _tripStops.length,
                         itemBuilder: (context, index) {
                           return StopCard(
-                            tripStop: _tripStops[index],
+                            stop: _tripStops[index],
                           );
                         },
                       ),

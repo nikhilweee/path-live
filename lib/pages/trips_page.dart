@@ -19,7 +19,7 @@ class TripsPage extends StatefulWidget {
 class _TripsPageState extends State<TripsPage> {
   final ScrollController _scrollController = ScrollController();
 
-  List<Trip> _allTrains = [];
+  List<Trip> _allTrips = [];
   List<String> _filters = [];
   bool _isLoading = true;
   bool _isFilterVisible = true;
@@ -28,7 +28,7 @@ class _TripsPageState extends State<TripsPage> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    _loadTrains();
+    _loadTrips();
   }
 
   void _onScroll() {
@@ -49,8 +49,8 @@ class _TripsPageState extends State<TripsPage> {
   }
 
   Widget _buildFilterChips() {
-    final uniqueRoutes = _allTrains
-        .map((train) => train.routeNameShort)
+    final uniqueRoutes = _allTrips
+        .map((trip) => trip.routeNameShort)
         .toSet()
         .toList()
       ..sort();
@@ -76,25 +76,25 @@ class _TripsPageState extends State<TripsPage> {
     );
   }
 
-  Future<void> _loadTrains() async {
+  Future<void> _loadTrips() async {
     final now = DateTime.now();
     final yesterday = now.subtract(const Duration(days: 1));
     final today = now;
     final tomorrow = now.add(const Duration(days: 1));
 
-    final trains = <Trip>[];
-    trains.addAll(await DatabaseService.getTrainsForDay(
+    final trips = <Trip>[];
+    trips.addAll(await DatabaseService.getTripsForDay(
         widget.station.consideredStationFullName, yesterday));
-    trains.addAll(await DatabaseService.getTrainsForDay(
+    trips.addAll(await DatabaseService.getTripsForDay(
         widget.station.consideredStationFullName, today));
-    trains.addAll(await DatabaseService.getTrainsForDay(
+    trips.addAll(await DatabaseService.getTripsForDay(
         widget.station.consideredStationFullName, tomorrow));
 
-    // Sort all trains by datetime
-    trains.sort((a, b) => a.departureDateTime.compareTo(b.departureDateTime));
+    // Sort all trips by datetime
+    trips.sort((a, b) => a.departureDateTime.compareTo(b.departureDateTime));
 
     setState(() {
-      _allTrains = trains;
+      _allTrips = trips;
       _isLoading = false;
     });
   }
@@ -108,16 +108,16 @@ class _TripsPageState extends State<TripsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredTrains = _filters.isEmpty
-        ? _allTrains
-        : _allTrains
-            .where((train) => _filters.contains(train.routeNameShort))
+    final filteredTrips = _filters.isEmpty
+        ? _allTrips
+        : _allTrips
+            .where((trip) => _filters.contains(trip.routeNameShort))
             .toList();
 
-    // Recalculate center index for filtered trains
+    // Recalculate center index for filtered trips
     int filteredCenterIndex = 0;
-    for (int i = 0; i < filteredTrains.length; i++) {
-      if (!filteredTrains[i].departureDateTime.isBefore(DateTime.now())) {
+    for (int i = 0; i < filteredTrips.length; i++) {
+      if (!filteredTrips[i].departureDateTime.isBefore(DateTime.now())) {
         filteredCenterIndex = i;
         break;
       }
@@ -151,33 +151,33 @@ class _TripsPageState extends State<TripsPage> {
               controller: _scrollController,
               center: ValueKey(filteredCenterIndex),
               slivers: [
-                // Past trains (in reverse order)
+                // Past trips (in reverse order)
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
                       final reverseIndex = filteredCenterIndex - 1 - index;
                       if (reverseIndex < 0) return null;
                       return TripCard(
-                        schedule: filteredTrains[reverseIndex],
+                        trip: filteredTrips[reverseIndex],
                         isPast: true,
                       );
                     },
                     childCount: filteredCenterIndex,
                   ),
                 ),
-                // Future trains
+                // Future trips
                 SliverList(
                   key: ValueKey(filteredCenterIndex),
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
                       final actualIndex = filteredCenterIndex + index;
-                      if (actualIndex >= filteredTrains.length) return null;
+                      if (actualIndex >= filteredTrips.length) return null;
                       return TripCard(
-                        schedule: filteredTrains[actualIndex],
+                        trip: filteredTrips[actualIndex],
                         isPast: false,
                       );
                     },
-                    childCount: filteredTrains.length - filteredCenterIndex,
+                    childCount: filteredTrips.length - filteredCenterIndex,
                   ),
                 ),
               ],
