@@ -36,8 +36,16 @@ Update app icons after editing `pubspec.yaml` with the correct paths
 dart run flutter_launcher_icons
 ```
 
+# Release
+
 Create a signed app bundle for distribution
 
 ```
 flutter build appbundle
+```
+
+Upload to play store using fastlane
+
+```
+fastlane internal
 ```
