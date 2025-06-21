@@ -98,7 +98,7 @@ flutter:
   # see https://flutter.dev/custom-fonts/#from-packages
 
 flutter_launcher_icons:
-  image_path: "assets/icon/path-live.png"
+  image_path: "assets/icon/icon.png"
   android: true
   adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "assets/icon/path-live.png"
+  adaptive_icon_foreground: "assets/icon/icon.png"
